@@ -36,13 +36,30 @@
   // -------------------------------------------------------------------------
   // Actions
 
+  // Open new windows over the current one: same size and position, or
+  // maximized / fullscreen like it. (Incognito windows otherwise open at a
+  // small default size.)
+  async function currentBounds() {
+    try {
+      const win = await chrome.windows.getCurrent();
+      if (win.state === 'maximized' || win.state === 'fullscreen') return { state: win.state };
+      return { left: win.left, top: win.top, width: win.width, height: win.height };
+    } catch {
+      return {};
+    }
+  }
+
   // where: 'tabs' (background tabs here), 'window' or 'incognito'.
   async function openAll(urls, where = 'tabs') {
     if (!urls.length) return;
     if (urls.length > OPEN_ALL_CONFIRM && !confirm(`Open ${urls.length} tabs?`)) return;
     if (where === 'window' || where === 'incognito') {
       try {
-        await chrome.windows.create({ url: urls, incognito: where === 'incognito' });
+        const options = { url: urls, incognito: where === 'incognito' };
+        // Bounds can be refused (e.g. the window is mostly off-screen):
+        // then open with the browser's default size.
+        await chrome.windows.create({ ...options, ...(await currentBounds()) })
+          .catch(() => chrome.windows.create(options));
       } catch (err) {
         if (where === 'incognito') throw new Error(`Couldn't open an incognito window (${err.message}).`);
         throw err;

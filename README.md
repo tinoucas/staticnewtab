@@ -73,6 +73,8 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
     window**. Subfolders are included, and it asks first when that's more than
     15 tabs.
   - Bookmarks: open here, in a new tab, a new window or an incognito window.
+  - New and incognito windows open with the same size and position as the
+    window you're in, or maximized / fullscreen like it.
   - Edit, rename, copy the link, add a page or folder, delete (with **Undo**),
     or add a bookmark to your shortcuts. The built-in
   root folders (Other bookmarks…) can't be renamed or deleted.
