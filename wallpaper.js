@@ -5,9 +5,6 @@
 
 (() => {
   const SETTINGS_KEY = 'wallpaper'; // { id, fit, dim } — absent when none
-  const DB_NAME = 'static-new-tab';
-  const STORE = 'files';
-  const FILE_KEY = 'wallpaper';
 
   const layer = document.getElementById('wallpaper');
   const dialog = document.getElementById('wp-dialog');
@@ -24,31 +21,7 @@
   let shownId = null;
   let objectUrl = null;
 
-  // -------------------------------------------------------------------------
-  // IndexedDB
-
-  function db() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  async function idb(mode, fn) {
-    const d = await db();
-    return new Promise((resolve, reject) => {
-      const tx = d.transaction(STORE, mode);
-      const req = fn(tx.objectStore(STORE));
-      tx.oncomplete = () => resolve(req.result);
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  const readImage = () => idb('readonly', (s) => s.get(FILE_KEY));
-  const writeImage = (blob) => idb('readwrite', (s) => s.put(blob, FILE_KEY));
-  const deleteImage = () => idb('readwrite', (s) => s.delete(FILE_KEY));
+  const { readImage, writeImage, deleteImage } = Settings; // settings.js
 
   // -------------------------------------------------------------------------
   // Import

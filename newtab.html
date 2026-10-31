@@ -38,8 +38,8 @@
 
   <footer>
     <div id="edit-tools" hidden>
-      <button type="button" id="import">Import</button>
-      <button type="button" id="export">Export</button>
+      <button type="button" id="import" title="Restore shortcuts, wallpaper and settings from a file">Import</button>
+      <button type="button" id="export" title="Save shortcuts, wallpaper and settings to settings.json">Export</button>
       <button type="button" id="toggle-bookmarks">Hide bookmarks</button>
       <button type="button" id="open-wallpaper">Wallpaper…</button>
     </div>
@@ -106,6 +106,7 @@
   </div>
 
   <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <script src="settings.js"></script>
   <script src="newtab.js"></script>
   <script src="bookmarks.js"></script>
   <script src="bookmarks-edit.js"></script>

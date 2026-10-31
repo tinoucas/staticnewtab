@@ -15,6 +15,11 @@
     bookmarks bar's menu system)
   - `wallpaper.js`: background image, stored in IndexedDB
   - `icon.svg`: favicon of the pinned tab
+  - `settings.js`: export/import of all settings, and defaults from
+    `defaults/settings.json` on a fresh install (also loaded by background.js
+    via importScripts)
+- `defaults/settings.json` holds the user's personal settings: it is
+  git-ignored and the repo is public, so never commit it.
 - The pinned tab is `chrome-extension://<id>/newtab.html` (opened directly,
   not through `chrome://newtab`) so the page can take the keyboard focus.
 - Test with the pre-installed Playwright Chromium by loading the extension with

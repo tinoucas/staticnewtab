@@ -290,14 +290,20 @@ grid.addEventListener('dragend', () => {
   grid.querySelector('.dragging')?.classList.remove('dragging');
 });
 
-// Import / export as JSON.
-document.getElementById('export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(shortcuts, null, 2) + '\n'], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'shortcuts.json';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+// Export / import. Export saves everything (shortcuts, wallpaper and
+// settings) as settings.json; see settings.js.
+document.getElementById('export').addEventListener('click', async () => {
+  try {
+    const data = await Settings.exportAll();
+    const blob = new Blob([JSON.stringify(data, null, 2) + '\n'], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'settings.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (err) {
+    alert(`Couldn't export: ${err.message}`);
+  }
 });
 
 document.getElementById('import').addEventListener('click', () => importFile.click());
@@ -308,6 +314,13 @@ importFile.addEventListener('change', async () => {
   if (!file) return;
   try {
     const data = JSON.parse(await file.text());
+    if (Settings.isBackup(data)) {
+      if (confirm('Replace your shortcuts, wallpaper and settings with the ones in this file?')) {
+        await Settings.importAll(data);
+      }
+      return;
+    }
+    // Older export: a plain list of shortcuts.
     const list = sanitize(Array.isArray(data) ? data : data.shortcuts);
     if (!list.length) throw new Error('No shortcuts found in that file.');
     const replace = !shortcuts.length ||

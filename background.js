@@ -12,6 +12,8 @@
 //     reopens your last real tab. In a window without a pinned New Tab yet
 //     (e.g. a new window), it is replaced by a pinned one.
 
+importScripts('settings.js'); // Settings: defaults on a fresh install
+
 const STORAGE_KEY = 'managed';
 
 // URLs that are a New Tab page wherever they show up.
@@ -170,8 +172,14 @@ async function release(tab) {
 // ---------------------------------------------------------------------------
 // Event wiring (must be registered synchronously at top level for MV3).
 
-chrome.runtime.onInstalled.addListener(() => run('installed', reconcile));
-chrome.runtime.onStartup.addListener(() => run('startup', reconcile));
+chrome.runtime.onInstalled.addListener(() => {
+  run('defaults', () => Settings.applyDefaultsIfFresh());
+  run('installed', reconcile);
+});
+chrome.runtime.onStartup.addListener(() => {
+  run('defaults', () => Settings.applyDefaultsIfFresh());
+  run('startup', reconcile);
+});
 
 chrome.tabs.onCreated.addListener((tab) => run('tab created', () => onNewTab(tab)));
 

@@ -43,8 +43,8 @@ Click **Edit** (bottom right) to:
 - **Add** a shortcut with the *Add shortcut* tile (name, URL, optional icon URL),
 - **Edit** one by clicking it, or **remove** it with ×,
 - **Reorder** by dragging tiles,
-- **Import / Export** the list as JSON, to back it up or move it to another
-  browser.
+- **Export** everything (shortcuts, wallpaper, settings) to one
+  `settings.json` file, and **Import** it back. See *Keeping your settings*.
 
 Click **Done** or press Esc to finish. Changes show up at once in every open
 New Tab, including the pinned tab in each window.
@@ -52,15 +52,6 @@ New Tab, including the pinned tab in each window.
 Icons are the site favicons the browser has already cached (the extension makes
 no network request for them). A site you haven't visited yet shows its first
 letter until you've been there once.
-
-The JSON format is a plain list:
-
-```json
-[
-  { "name": "Mail", "url": "https://mail.proton.me" },
-  { "name": "GitHub", "url": "https://github.com", "icon": "https://github.com/favicon.ico" }
-]
-```
 
 Ctrl/Cmd-click or middle-click a shortcut to open it in a new tab without
 leaving the pinned one.
@@ -112,6 +103,31 @@ photos are scaled down to your screen size (at least 2560 px) so the page
 opens quickly. Animated GIFs and SVGs are kept as they are. Changes show up
 in every open New Tab.
 
+## Keeping your settings
+
+Your shortcuts, wallpaper and settings live in the browser's storage for this
+extension. They survive reloads and browser restarts, but they're wiped if the
+extension is removed, or loaded from another folder (which gives it a new
+extension ID). To make them permanent:
+
+1. On the New Tab page, click **Edit**, then **Export**. This saves
+   `settings.json` with your shortcuts, wallpaper image (with fit and dim),
+   bookmarks-bar setting and the domains you hid from the address bar.
+2. Move that file to the `defaults/` folder of the extension, so its path is
+   `defaults/settings.json`.
+
+Whenever the extension starts with empty storage, it loads everything from that
+file. An install that already has data is never overwritten. Export again after
+you change things.
+
+`defaults/settings.json` is git-ignored: it stays on your computer and
+`git pull` leaves it alone. **This repository is public**, so only commit it
+(`git add -f defaults/settings.json`) if you're fine with your shortcuts and
+wallpaper being public.
+
+**Import** (in Edit mode) restores a `settings.json` at any time. It also
+accepts the older shortcut-only export.
+
 ## Install (unpacked)
 
 1. Clone or download this repository.
@@ -133,7 +149,8 @@ Permissions:
 - `history`: for address bar suggestions and the *Recently visited* list. The
   extension only deletes a page when you click × on it.
 - `search`: to search with your default search engine from the address bar.
-- `storage`: for your shortcuts and settings.
+- `storage`, `unlimitedStorage`: for your shortcuts, settings and wallpaper.
+  The browser won't clear them to free up space.
 
 Nothing is sent anywhere.
 
