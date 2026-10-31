@@ -42,8 +42,27 @@
     </form>
   </dialog>
 
+  <dialog id="bm-dialog">
+    <form method="dialog" id="bm-form">
+      <h2 id="bm-dialog-title">Edit bookmark</h2>
+      <label>Name <input id="bm-f-name" autocomplete="off"></label>
+      <label id="bm-f-url-label">URL <input id="bm-f-url" type="text" autocomplete="off" placeholder="example.com"></label>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button type="button" id="bm-cancel">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="bm-toast" role="status" hidden>
+    <span id="bm-toast-text"></span>
+    <button type="button" id="bm-undo">Undo</button>
+  </div>
+
   <input type="file" id="import-file" accept="application/json,.json" hidden>
   <script src="newtab.js"></script>
   <script src="bookmarks.js"></script>
+  <script src="bookmarks-edit.js"></script>
 </body>
 </html>

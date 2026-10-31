@@ -54,6 +54,10 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
 - Bookmarks that don't fit go behind a **»** button.
 - **Other bookmarks** (and Mobile bookmarks, if you have any) sit at the right
   end.
+- **Right-click** a bookmark, folder or the bar to open (in a new tab or
+  window, or open all), edit, rename, copy the link, add a page or folder,
+  delete (with **Undo**), or add a bookmark to your shortcuts. The built-in
+  root folders (Other bookmarks…) can't be renamed or deleted.
 - **Keyboard:** ↓ / Enter opens a folder, ↑ ↓ move through a menu, → opens a
   submenu, ← goes back, and Esc closes.
 - The bar updates as soon as you add, move or rename a bookmark.
@@ -76,8 +80,8 @@ Permissions:
 - `tabs` (shown as "Read your browsing history"): to see when the pinned tab
   leaves the New Tab page.
 - `favicon`: to show the favicons the browser has already cached.
-- `bookmarks`: to show your bookmarks (read-only; the extension never changes
-  them).
+- `bookmarks`: to show your bookmarks and edit them from the right-click
+  menu. Nothing changes unless you choose an action.
 - `storage`: for your shortcuts.
 
 Nothing is sent anywhere.

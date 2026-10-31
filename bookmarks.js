@@ -15,6 +15,7 @@
   let show = true;
   let barNodes = [];      // bookmarks-bar children, in order
   let hiddenNodes = [];   // the ones pushed into the » menu
+  let barRootId = null;
 
   // -------------------------------------------------------------------------
   // Helpers
@@ -103,6 +104,7 @@
       const li = document.createElement('li');
       li.className = 'bm-empty';
       li.textContent = '(empty)';
+      li.bmParent = opener.bmNode; // right-click here adds into this folder
       menu.append(li);
     }
     for (const node of shown) {
@@ -148,6 +150,9 @@
 
   let hoverOpenedAt = 0;
 
+  // While the right-click menu is up, leave the dropdowns as they are.
+  const contextOpen = () => !!document.querySelector('.bm-context');
+
   function toggleFromBar(btn, focus) {
     // A click right after hovering opened this menu is part of the same
     // gesture: keep it open instead of toggling it shut.
@@ -165,6 +170,7 @@
 
   bar.addEventListener('mouseover', (e) => {
     const btn = e.target.closest('button.bm-item');
+    if (contextOpen()) return;
     if (btn && menus.length && menus[0].opener !== btn) {
       openMenu(btn, btn === overflowBtn ? hiddenNodes : btn.bmNode.children, 0);
       hoverOpenedAt = Date.now();
@@ -175,7 +181,7 @@
   // hovering anything else closes deeper submenus.
   document.addEventListener('mouseover', (e) => {
     const item = e.target.closest('.bm-menu-item');
-    if (!item) return;
+    if (!item || contextOpen()) return;
     const level = menuOf(item).level;
     clearTimeout(hoverTimer);
     hoverTimer = setTimeout(() => {
@@ -302,6 +308,7 @@
 
     const [tree] = await chrome.bookmarks.getTree();
     const roots = rootsOf(tree);
+    barRootId = roots['bookmarks-bar'][0]?.id;
 
     barNodes = visible(roots['bookmarks-bar'].flatMap((r) => r.children || []));
     itemsEl.replaceChildren(...barNodes.map((n) => entry(n, 'bm-item', true)));
@@ -315,6 +322,9 @@
     bar.hidden = !barNodes.length && !right.length;
     if (!bar.hidden) fit();
   }
+
+  // Used by bookmarks-edit.js (right-click menu).
+  window.bookmarksBar = { closeMenus, barRootId: () => barRootId };
 
   let pending = 0;
   function scheduleRender() {
