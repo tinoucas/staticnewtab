@@ -65,6 +65,21 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
 To hide the bar, click **Edit**, then **Hide bookmarks**. Bookmarklets
 (`javascript:` bookmarks) are left out because they can't run from this page.
 
+## Wallpaper
+
+Click **Edit**, then **Wallpaper…**, then **Choose image…**, or just drop an
+image file anywhere on the page.
+
+- **Fill the page** crops the image to cover the whole tab. **Fit inside the
+  page** shows all of it.
+- **Dim** darkens the image so labels and the bookmarks bar stay readable.
+- **Remove** goes back to the plain background.
+
+The image stays on your computer, in the extension's own storage. Very large
+photos are scaled down to your screen size (at least 2560 px) so the page
+opens quickly. Animated GIFs and SVGs are kept as they are. Changes show up
+in every open New Tab.
+
 ## Install (unpacked)
 
 1. Clone or download this repository.

@@ -302,3 +302,69 @@ dialog input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 #bm-toast-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 #bm-undo { background: none; border-color: transparent; color: inherit; font-weight: 600; }
 #bm-undo:hover { background: rgb(127 127 127 / 0.25); }
+
+/* Wallpaper */
+#wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--wp-image, none) center / var(--wp-fit, cover) no-repeat;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / var(--wp-dim, 0));
+}
+body.has-wallpaper #wallpaper { opacity: 1; }
+
+/* Keep text readable on top of an image. */
+body.has-wallpaper .tile .label,
+body.has-wallpaper #empty {
+  color: #fff;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+}
+body.has-wallpaper .tile:hover,
+body.has-wallpaper .tile:focus-visible { background: rgb(255 255 255 / 0.16); }
+body.has-wallpaper .bm-bar {
+  color: #fff;
+  border-bottom-color: transparent;
+  background: rgb(0 0 0 / 0.35);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+body.has-wallpaper .bm-item:hover,
+body.has-wallpaper .bm-item:focus-visible,
+body.has-wallpaper .bm-item[aria-expanded="true"] { background: rgb(255 255 255 / 0.18); }
+body.has-wallpaper .bm-right:not(:empty) { border-left-color: rgb(255 255 255 / 0.25); }
+body.has-wallpaper footer button { opacity: 0.85; }
+
+#wp-preview {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--tile) center / cover no-repeat;
+  color: var(--muted);
+}
+#wp-actions { margin: 0 0 16px; }
+#wp-dialog select, #wp-dialog input[type="range"] {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font: inherit;
+  color: var(--fg);
+}
+#wp-dialog select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--tile);
+}
+#wp-dialog input[type="range"] { padding: 0; border: 0; accent-color: var(--accent); }
+.hint { margin: 0; color: var(--muted); font-size: 12px; }
+body.drop-target #wallpaper { opacity: 1; outline: 4px dashed var(--accent); outline-offset: -12px; }

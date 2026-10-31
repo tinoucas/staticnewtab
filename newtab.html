@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="newtab.css">
 </head>
 <body>
+  <div id="wallpaper" aria-hidden="true"></div>
   <nav id="bookmarks" class="bm-bar" aria-label="Bookmarks" hidden>
     <div class="bm-items" role="menubar"></div>
     <button type="button" class="bm-item bm-overflow" title="More bookmarks" aria-haspopup="menu" hidden>»</button>
@@ -23,6 +24,7 @@
       <button type="button" id="import">Import</button>
       <button type="button" id="export">Export</button>
       <button type="button" id="toggle-bookmarks">Hide bookmarks</button>
+      <button type="button" id="open-wallpaper">Wallpaper…</button>
     </div>
     <button type="button" id="toggle-edit" title="Edit shortcuts" aria-pressed="false">Edit</button>
   </footer>
@@ -55,6 +57,32 @@
     </form>
   </dialog>
 
+  <dialog id="wp-dialog">
+    <form method="dialog">
+      <h2>Wallpaper</h2>
+      <div id="wp-preview"><span id="wp-none">No wallpaper</span></div>
+      <div class="actions" id="wp-actions">
+        <button type="button" id="wp-choose">Choose image…</button>
+        <button type="button" id="wp-remove" class="danger">Remove</button>
+      </div>
+      <label>Fit
+        <select id="wp-fit">
+          <option value="cover">Fill the page</option>
+          <option value="contain">Fit inside the page</option>
+        </select>
+      </label>
+      <label>Dim <output id="wp-dim-value"></output>
+        <input type="range" id="wp-dim" min="0" max="70" step="5">
+      </label>
+      <p class="hint">You can also drop an image file anywhere on the page.</p>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button type="submit" class="primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+  <input type="file" id="wp-file" accept="image/*" hidden>
+
   <div id="bm-toast" role="status" hidden>
     <span id="bm-toast-text"></span>
     <button type="button" id="bm-undo">Undo</button>
@@ -64,5 +92,6 @@
   <script src="newtab.js"></script>
   <script src="bookmarks.js"></script>
   <script src="bookmarks-edit.js"></script>
+  <script src="wallpaper.js"></script>
 </body>
 </html>
