@@ -264,7 +264,9 @@
     const inBar = e.target.closest('.bm-bar');
     if (!el && !inBar) return closeContext(); // leave the page's native menu alone
     e.preventDefault();
+    if (el?.classList.contains('bm-history')) return;
 
+    if (el?.bmNode?.kind) return; // history entries: no bookmark actions
     if (el?.bmNode) openContext(e, el.bmNode, null, el);
     else if (el?.bmParent) openContext(e, null, el.bmParent.id, el);
     else if (el?.classList.contains('bm-overflow') || inBar) {

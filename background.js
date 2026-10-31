@@ -6,10 +6,11 @@
 //     shortcut click), it is unpinned, moved to the end of the tab strip
 //     (where Ctrl+T / "+" would have put it) and a fresh pinned New Tab
 //     is created in the background.
-//  3. When a fresh, unpinned New Tab appears ("+", Ctrl+T, new window), it
-//     takes over the pinned slot and the previous managed tab is closed.
-//     Swapping (rather than closing the new tab and activating the old one)
-//     keeps the keyboard focus in the address bar, so you can type at once.
+//  3. When a fresh, unpinned New Tab appears ("+", Ctrl+T), it is closed at
+//     once and the pinned one is shown instead. Closing it before it has
+//     loaded keeps it out of "Recently closed", so Ctrl+Shift+T still
+//     reopens your last real tab. In a window without a pinned New Tab yet
+//     (e.g. a new window), the new tab is pinned instead.
 
 const STORAGE_KEY = 'managed';
 
@@ -131,14 +132,17 @@ async function onNewTab(tab) {
     return;
   }
 
-  // "+" / Ctrl+T / new window: the new tab becomes the pinned one.
+  // "+" / Ctrl+T: show the pinned New Tab instead.
+  if (oldTab) {
+    await chrome.tabs.remove(tab.id).catch(() => {});
+    await chrome.tabs.update(oldTab.id, { active: true });
+    return;
+  }
+
+  // First New Tab of a window: it becomes the pinned one.
   manage(tab);
   await save();
   await chrome.tabs.update(tab.id, { pinned: true });
-  if (oldTab) {
-    await chrome.tabs.move(tab.id, { index: oldTab.index }).catch(() => {});
-    await chrome.tabs.remove(oldTab.id).catch(() => {});
-  }
 }
 
 // The managed tab left the New Tab page: release it as a regular tab.

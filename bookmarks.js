@@ -23,6 +23,10 @@
   const isWeb = (url) => /^https?:/i.test(url);
   const isBookmarklet = (url) => /^javascript:/i.test(url);
   const visible = (nodes) => (nodes || []).filter((n) => !n.url || !isBookmarklet(n.url));
+  // Menus can also hold non-bookmark entries (see history.js):
+  //   kind 'link' (a URL), 'action' (runs node.run()), 'header', 'note',
+  //   'separator'. Bookmark nodes have no kind.
+  const isFolder = (n) => !n.url && !n.kind;
 
   function hostOf(url) {
     try {
@@ -33,6 +37,11 @@
   }
 
   function icon(node) {
+    if (node.icon) {
+      const span = document.createElement('span');
+      span.className = `bm-icon bm-mask-icon bm-icon-${node.icon}`;
+      return span;
+    }
     if (node.url) {
       const img = document.createElement('img');
       img.className = 'bm-icon';
@@ -41,7 +50,7 @@
       return img;
     }
     const span = document.createElement('span');
-    span.className = 'bm-icon bm-folder-icon';
+    span.className = 'bm-icon bm-mask-icon bm-icon-folder';
     return span;
   }
 
@@ -55,7 +64,11 @@
   // A link or folder element; `cls` is bm-item (bar) or bm-menu-item (menu).
   function entry(node, cls, inBar) {
     let el;
-    if (node.url) {
+    if (node.kind === 'action') {
+      el = document.createElement('button');
+      el.type = 'button';
+      el.title = node.tooltip || node.title || '';
+    } else if (node.url) {
       el = document.createElement('a');
       el.href = node.url;
       el.title = node.title ? `${node.title}\n${node.url}` : node.url;
@@ -73,6 +86,12 @@
     // Like the browser's bar, an untitled bookmark shows only its icon.
     const text = node.title || (inBar ? '' : node.url ? hostOf(node.url) : 'Untitled folder');
     if (text) el.append(label(text));
+    if (node.meta) {
+      const meta = document.createElement('span');
+      meta.className = 'bm-meta';
+      meta.textContent = node.meta;
+      el.append(meta);
+    }
     return el;
   }
 
@@ -109,8 +128,17 @@
     }
     for (const node of shown) {
       const li = document.createElement('li');
-      li.setAttribute('role', 'none');
-      li.append(entry(node, 'bm-menu-item', false));
+      if (node.kind === 'separator') {
+        li.className = 'bm-sep';
+        li.setAttribute('role', 'separator');
+      } else if (node.kind === 'header' || node.kind === 'note') {
+        li.className = node.kind === 'header' ? 'bm-header' : 'bm-empty';
+        li.setAttribute('role', 'presentation');
+        li.textContent = node.title;
+      } else {
+        li.setAttribute('role', 'none');
+        li.append(entry(node, 'bm-menu-item', false));
+      }
       menu.append(li);
     }
 
@@ -153,12 +181,25 @@
   // While the right-click menu is up, leave the dropdowns as they are.
   const contextOpen = () => !!document.querySelector('.bm-context');
 
+  // What a bar button's menu shows: the » overflow, a menu that loads its
+  // entries on demand (bmLoad, e.g. History), or a bookmark folder.
+  async function nodesFor(btn) {
+    if (btn === overflowBtn) return hiddenNodes;
+    if (btn.bmLoad) return btn.bmLoad();
+    return btn.bmNode.children;
+  }
+
+  async function openFromBar(btn, opts) {
+    const nodes = await nodesFor(btn);
+    return openMenu(btn, nodes, 0, opts);
+  }
+
   function toggleFromBar(btn, focus) {
     // A click right after hovering opened this menu is part of the same
     // gesture: keep it open instead of toggling it shut.
     if (menus[0]?.opener === btn && Date.now() - hoverOpenedAt < 500) return;
     if (menus[0]?.opener === btn) closeMenus();
-    else openMenu(btn, btn === overflowBtn ? hiddenNodes : btn.bmNode.children, 0, { focus });
+    else openFromBar(btn, { focus });
   }
 
   // Bar: click a folder (or ») to open/close its menu; while a menu is open,
@@ -172,8 +213,8 @@
     const btn = e.target.closest('button.bm-item');
     if (contextOpen()) return;
     if (btn && menus.length && menus[0].opener !== btn) {
-      openMenu(btn, btn === overflowBtn ? hiddenNodes : btn.bmNode.children, 0);
       hoverOpenedAt = Date.now();
+      openFromBar(btn);
     }
   });
 
@@ -185,14 +226,19 @@
     const level = menuOf(item).level;
     clearTimeout(hoverTimer);
     hoverTimer = setTimeout(() => {
-      if (item.bmNode.url) closeMenus(level + 1);
+      if (!isFolder(item.bmNode)) closeMenus(level + 1);
       else if (menus[level + 1]?.opener !== item) openMenu(item, item.bmNode.children, level + 1);
     }, 150);
   });
 
   document.addEventListener('click', (e) => {
     const item = e.target.closest('.bm-menu-item');
-    if (item && !item.bmNode.url) {
+    if (item?.bmNode.kind === 'action') {
+      closeMenus();
+      Promise.resolve(item.bmNode.run(e)).catch(console.error);
+      return;
+    }
+    if (item && isFolder(item.bmNode)) {
       openMenu(item, item.bmNode.children, menuOf(item).level + 1, { focus: e.detail === 0 });
       return;
     }
@@ -223,7 +269,7 @@
 
     if (t?.classList.contains('bm-item') && t.tagName === 'BUTTON' && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      if (menus[0]?.opener !== t) openMenu(t, t === overflowBtn ? hiddenNodes : t.bmNode.children, 0, { focus: true });
+      if (menus[0]?.opener !== t) openFromBar(t, { focus: true });
       else menus[0].querySelector('.bm-menu-item')?.focus();
       return;
     }
@@ -248,7 +294,7 @@
       const next = items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length];
       next?.focus();
       closeMenus(menu.level + 1);
-    } else if (e.key === 'ArrowRight' && !t.bmNode.url) {
+    } else if (e.key === 'ArrowRight' && isFolder(t.bmNode)) {
       e.preventDefault();
       openMenu(t, t.bmNode.children, menu.level + 1, { focus: true });
     } else if (e.key === 'ArrowLeft' && menu.level > 0) {
@@ -302,7 +348,13 @@
     toggle.textContent = show ? 'Hide bookmarks' : 'Show bookmarks';
     closeMenus();
     if (!show) {
-      bar.hidden = true;
+      // The bar stays for the History button, without the bookmarks.
+      itemsEl.replaceChildren();
+      rightEl.replaceChildren();
+      barNodes = hiddenNodes = [];
+      overflowBtn.hidden = true;
+      bar.classList.add('bm-minimal');
+      bar.hidden = false;
       return;
     }
 
@@ -319,8 +371,9 @@
       .map((r) => entry(r, 'bm-item', true));
     rightEl.replaceChildren(...right);
 
-    bar.hidden = !barNodes.length && !right.length;
-    if (!bar.hidden) fit();
+    bar.classList.toggle('bm-minimal', !barNodes.length && !right.length);
+    bar.hidden = false;
+    fit();
   }
 
   // Used by bookmarks-edit.js (right-click menu).

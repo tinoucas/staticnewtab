@@ -11,7 +11,8 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
 - **Close the pinned tab** → it comes back.
 - **New windows** get their own pinned New Tab.
 - **A plain shortcut page** instead of the browser's New Tab page, with a
-  **bookmarks bar** at the top.
+  **bookmarks bar** and a **History** menu (recently closed tabs, recently
+  visited pages) at the top.
 
 ## Your shortcuts
 
@@ -65,6 +66,17 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
 To hide the bar, click **Edit**, then **Hide bookmarks**. Bookmarklets
 (`javascript:` bookmarks) are left out because they can't run from this page.
 
+## History
+
+The clock button at the right end of the bar opens a menu with:
+
+- **Recently closed** tabs and windows. Clicking one restores it with its
+  back/forward history, like Ctrl+Shift+T.
+- **Recently visited** pages. Clicking one opens it like a bookmark.
+- **Show full history**, which opens the browser's History page.
+
+The button stays even when the bookmarks are hidden.
+
 ## Wallpaper
 
 Click **Edit**, then **Wallpaper…**, then **Choose image…**, or just drop an
@@ -97,22 +109,29 @@ Permissions:
 - `favicon`: to show the favicons the browser has already cached.
 - `bookmarks`: to show your bookmarks and edit them from the right-click
   menu. Nothing changes unless you choose an action.
-- `storage`: for your shortcuts.
+- `sessions`: for the *Recently closed* list.
+- `history`: for the *Recently visited* list. The extension only reads it.
+- `storage`: for your shortcuts and settings.
 
 Nothing is sent anywhere.
 
 ## How it works
 
-`+` doesn't close the new tab and jump back to the pinned one. Instead, **the
-new tab takes over the pinned slot** and the old pinned New Tab is closed. The
-result looks the same, but the keyboard focus stays in the address bar, so
-Ctrl+T followed by typing still works. If the extension activated an existing
-tab instead, focus would return to wherever it was last in that tab.
+When you press `+` or Ctrl+T, the browser opens a new tab. The extension
+closes it right away and switches to the pinned New Tab. Closing it before it
+has finished loading keeps it out of *Recently closed*, so Ctrl+Shift+T still
+reopens your last real tab.
 
 The pinned tab is tracked by ID. Your other pinned tabs (mail, chat…) are never
 touched.
 
 ## Known limitations
+
+- **Cursor after Ctrl+T.** On the pinned tab, the cursor goes back to where it
+  was when you last left that tab. Normally that's the address bar, so you can
+  type straight away. If you had clicked inside the pinned page (a bookmark
+  menu, for example) and switched away without opening anything, the cursor
+  stays in the page; press Ctrl+L or F6 to get to the address bar.
 
 - **A brief flicker.** Extensions can only react after the browser has created
   or navigated a tab, so for a split second you may see the tab appear unpinned,
