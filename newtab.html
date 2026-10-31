@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>New Tab</title>
+  <link rel="icon" href="icon.svg">
   <link rel="stylesheet" href="newtab.css">
 </head>
 <body>
@@ -12,12 +13,25 @@
     <div class="bm-items" role="menubar"></div>
     <button type="button" class="bm-item bm-overflow" title="More bookmarks" aria-haspopup="menu" hidden>»</button>
     <div class="bm-right"></div>
-    <button type="button" class="bm-item bm-history" title="Recently closed tabs and history" aria-label="History" aria-haspopup="menu" aria-expanded="false">
-      <span class="bm-icon bm-mask-icon bm-icon-history"></span>
-    </button>
   </nav>
 
   <main>
+    <div id="omnibox">
+      <div class="ob-row">
+        <form class="ob-field" id="ob-form" role="search" autocomplete="off">
+          <span class="ob-search-icon" aria-hidden="true"></span>
+          <input id="ob-input" type="text" spellcheck="false" autocomplete="off" autofocus
+                 placeholder="Search or type a URL" aria-label="Search or type a URL"
+                 role="combobox" aria-autocomplete="both" aria-expanded="false" aria-controls="ob-list">
+        </form>
+        <button type="button" class="bm-item bm-history bm-opener bm-align-end ob-history"
+                title="Recently closed tabs and history" aria-label="History" aria-haspopup="menu" aria-expanded="false">
+          <span class="bm-icon bm-mask-icon bm-icon-history"></span>
+        </button>
+      </div>
+      <ul id="ob-list" role="listbox" aria-label="Suggestions" hidden></ul>
+    </div>
+
     <nav id="grid" aria-label="Shortcuts"></nav>
     <p id="empty" hidden>No shortcuts yet. Click <strong>Add shortcut</strong> to create one.</p>
   </main>
@@ -96,6 +110,7 @@
   <script src="bookmarks.js"></script>
   <script src="bookmarks-edit.js"></script>
   <script src="history.js"></script>
+  <script src="omnibox.js"></script>
   <script src="wallpaper.js"></script>
 </body>
 </html>

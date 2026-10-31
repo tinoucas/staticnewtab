@@ -159,7 +159,7 @@
 
     let left, top;
     if (level === 0) {
-      left = anchor.left;
+      left = menu.opener.classList.contains('bm-align-end') ? anchor.right - width : anchor.left;
       top = anchor.bottom + 2;
       if (top + height > vh - pad) menu.style.maxHeight = `${vh - top - pad}px`;
     } else {
@@ -242,7 +242,7 @@
       openMenu(item, item.bmNode.children, menuOf(item).level + 1, { focus: e.detail === 0 });
       return;
     }
-    if (!item && !e.target.closest('.bm-bar')) closeMenus();
+    if (!item && !e.target.closest('.bm-bar, .bm-opener')) closeMenus();
   });
 
   // Open links. Web links navigate normally (or open in a new tab with
@@ -348,13 +348,7 @@
     toggle.textContent = show ? 'Hide bookmarks' : 'Show bookmarks';
     closeMenus();
     if (!show) {
-      // The bar stays for the History button, without the bookmarks.
-      itemsEl.replaceChildren();
-      rightEl.replaceChildren();
-      barNodes = hiddenNodes = [];
-      overflowBtn.hidden = true;
-      bar.classList.add('bm-minimal');
-      bar.hidden = false;
+      bar.hidden = true;
       return;
     }
 
@@ -371,13 +365,14 @@
       .map((r) => entry(r, 'bm-item', true));
     rightEl.replaceChildren(...right);
 
-    bar.classList.toggle('bm-minimal', !barNodes.length && !right.length);
-    bar.hidden = false;
-    fit();
+    bar.hidden = !barNodes.length && !right.length;
+    if (!bar.hidden) fit();
   }
 
   // Used by bookmarks-edit.js (right-click menu).
-  window.bookmarksBar = { closeMenus, barRootId: () => barRootId };
+  // toggleMenu also opens menus for buttons outside the bar (.bm-opener,
+  // e.g. History next to the address bar).
+  window.bookmarksBar = { closeMenus, barRootId: () => barRootId, toggleMenu: toggleFromBar };
 
   let pending = 0;
   function scheduleRender() {

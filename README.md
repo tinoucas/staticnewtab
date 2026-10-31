@@ -10,9 +10,31 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
   New Tab.
 - **Close the pinned tab** → it comes back.
 - **New windows** get their own pinned New Tab.
-- **A plain shortcut page** instead of the browser's New Tab page, with a
-  **bookmarks bar** and a **History** menu (recently closed tabs, recently
-  visited pages) at the top.
+- **A plain page of your own** instead of the browser's New Tab page: an
+  **address bar** with domain autocompletion, a **History** button (recently
+  closed tabs, recently visited pages), your **shortcuts**, a **bookmarks
+  bar** and an optional **wallpaper**.
+
+## Address bar
+
+The address bar sits above your shortcuts, and the cursor is in it whenever
+the pinned tab gets focus. Ctrl+T then typing just works, and typing anywhere
+else on the page goes into it too.
+
+- **Domains complete first.** Typing `gma` suggests `gmail.com` right in the
+  field, with the completed part selected. Keep typing to ignore it, or press
+  → / End / Tab to accept it. Domains are ranked by how often you visit them
+  (sites you typed count most), plus your bookmarks and shortcuts.
+- **Suggestions below:** what Enter will do, a web search (with your default
+  search engine), matching bookmarks and pages from your history. Pick one
+  with ↑ / ↓ or the mouse.
+- **× on a suggestion** (or Shift+Delete on the selected one):
+  - on a **history page**, deletes that page from your browser history;
+  - on a **domain** completion, stops suggesting that domain here. Your
+    history is left alone. The list is kept in the extension's storage.
+- Alt+Enter, Ctrl/Cmd-click or middle-click opens in a new tab.
+- Esc steps back: to what you typed, then closes the list, then clears the
+  field.
 
 ## Your shortcuts
 
@@ -68,14 +90,12 @@ To hide the bar, click **Edit**, then **Hide bookmarks**. Bookmarklets
 
 ## History
 
-The clock button at the right end of the bar opens a menu with:
+The clock button right of the address bar opens a menu with:
 
 - **Recently closed** tabs and windows. Clicking one restores it with its
   back/forward history, like Ctrl+Shift+T.
 - **Recently visited** pages. Clicking one opens it like a bookmark.
 - **Show full history**, which opens the browser's History page.
-
-The button stays even when the bookmarks are hidden.
 
 ## Wallpaper
 
@@ -110,12 +130,21 @@ Permissions:
 - `bookmarks`: to show your bookmarks and edit them from the right-click
   menu. Nothing changes unless you choose an action.
 - `sessions`: for the *Recently closed* list.
-- `history`: for the *Recently visited* list. The extension only reads it.
+- `history`: for address bar suggestions and the *Recently visited* list. The
+  extension only deletes a page when you click × on it.
+- `search`: to search with your default search engine from the address bar.
 - `storage`: for your shortcuts and settings.
 
 Nothing is sent anywhere.
 
 ## How it works
+
+The pinned tab shows the extension's page directly
+(`chrome-extension://…/newtab.html`) instead of `chrome://newtab`. A
+`chrome://newtab` page can never take the keyboard focus from the browser's
+own address bar, but an extension page can. That's what lets the in-page
+address bar get the cursor. The browser's address bar shows that extension URL
+on the pinned tab.
 
 When you press `+` or Ctrl+T, the browser opens a new tab. The extension
 closes it right away and switches to the pinned New Tab. Closing it before it
@@ -126,12 +155,6 @@ The pinned tab is tracked by ID. Your other pinned tabs (mail, chat…) are neve
 touched.
 
 ## Known limitations
-
-- **Cursor after Ctrl+T.** On the pinned tab, the cursor goes back to where it
-  was when you last left that tab. Normally that's the address bar, so you can
-  type straight away. If you had clicked inside the pinned page (a bookmark
-  menu, for example) and switched away without opening anything, the cursor
-  stays in the page; press Ctrl+L or F6 to get to the address bar.
 
 - **A brief flicker.** Extensions can only react after the browser has created
   or navigated a tab, so for a split second you may see the tab appear unpinned,

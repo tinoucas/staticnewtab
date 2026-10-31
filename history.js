@@ -93,4 +93,5 @@
   }
 
   button.bmLoad = load;
+  button.addEventListener('click', (e) => window.bookmarksBar.toggleMenu(button, e.detail === 0));
 })();

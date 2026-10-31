@@ -10,7 +10,7 @@
 //     once and the pinned one is shown instead. Closing it before it has
 //     loaded keeps it out of "Recently closed", so Ctrl+Shift+T still
 //     reopens your last real tab. In a window without a pinned New Tab yet
-//     (e.g. a new window), the new tab is pinned instead.
+//     (e.g. a new window), it is replaced by a pinned one.
 
 const STORAGE_KEY = 'managed';
 
@@ -20,7 +20,12 @@ const NTP_RE = /^(chrome|edge|brave|vivaldi):\/\/(newtab|new-tab-page)\b|^chrome
 // (e.g. another extension's New Tab override).
 const INTERNAL_RE = /^(chrome|chrome-extension|chrome-search|chrome-untrusted|about|edge|brave|vivaldi):/;
 
-const isNtpUrl = (url) => !!url && NTP_RE.test(url);
+// The pinned tab shows this extension page directly (not chrome://newtab):
+// a chrome://newtab page can never take keyboard focus from the browser's
+// address bar, an extension page can, so its own address bar gets the cursor.
+const OWN_URL = chrome.runtime.getURL('newtab.html');
+const isOwnPage = (url) => !!url && url.startsWith(OWN_URL);
+const isNtpUrl = (url) => !!url && (NTP_RE.test(url) || isOwnPage(url));
 const tabUrl = (tab) => tab.pendingUrl || tab.url || '';
 
 // windowId -> { tabId, settled, home: [urls] }
@@ -78,6 +83,12 @@ function manage(tab) {
   };
 }
 
+// Manage a pinned tab, switching an old-style chrome://newtab one to our page.
+async function adopt(tab) {
+  manage(tab);
+  if (!isOwnPage(tabUrl(tab))) await chrome.tabs.update(tab.id, { url: OWN_URL }).catch(() => {});
+}
+
 function isHome(m, url) {
   return isNtpUrl(url) || m.home.includes(url) || (!m.settled && INTERNAL_RE.test(url));
 }
@@ -96,12 +107,12 @@ async function ensure(windowId) {
   const pinned = await chrome.tabs.query({ windowId, pinned: true });
   const ntps = pinned.filter((t) => isNtpUrl(tabUrl(t)));
   if (ntps.length) {
-    manage(ntps[0]);
+    await adopt(ntps[0]);
     // Extra pinned New Tabs are duplicates (e.g. after a crash restore).
     const extra = ntps.slice(1).map((t) => t.id);
     if (extra.length) await chrome.tabs.remove(extra).catch(() => {});
   } else {
-    const tab = await chrome.tabs.create({ windowId, pinned: true, active: false });
+    const tab = await chrome.tabs.create({ windowId, url: OWN_URL, pinned: true, active: false });
     manage(tab);
   }
   await save();
@@ -126,7 +137,7 @@ async function onNewTab(tab) {
     // A restored pinned New Tab: adopt it, or drop it if we already have one.
     if (oldTab) await chrome.tabs.remove(tab.id).catch(() => {});
     else {
-      manage(tab);
+      await adopt(tab);
       await save();
     }
     return;
@@ -139,10 +150,12 @@ async function onNewTab(tab) {
     return;
   }
 
-  // First New Tab of a window: it becomes the pinned one.
-  manage(tab);
+  // First New Tab of a window: replace it with a pinned page of our own
+  // (created first, so the window never runs out of tabs).
+  const pinned = await chrome.tabs.create({ windowId: tab.windowId, url: OWN_URL, pinned: true, active: true });
+  manage(pinned);
   await save();
-  await chrome.tabs.update(tab.id, { pinned: true });
+  await chrome.tabs.remove(tab.id).catch(() => {});
 }
 
 // The managed tab left the New Tab page: release it as a regular tab.

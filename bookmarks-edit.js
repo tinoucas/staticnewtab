@@ -262,9 +262,9 @@
     if (e.target.closest('.bm-context')) return e.preventDefault();
     const el = e.target.closest('.bm-item, .bm-menu-item, .bm-empty');
     const inBar = e.target.closest('.bm-bar');
+    if (e.target.closest('.bm-history')) return e.preventDefault();
     if (!el && !inBar) return closeContext(); // leave the page's native menu alone
     e.preventDefault();
-    if (el?.classList.contains('bm-history')) return;
 
     if (el?.bmNode?.kind) return; // history entries: no bookmark actions
     if (el?.bmNode) openContext(e, el.bmNode, null, el);

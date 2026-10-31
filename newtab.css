@@ -222,9 +222,6 @@ dialog input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .bm-icon-folder { --mask: var(--folder); }
 .bm-icon-history { --mask: var(--history); }
 .bm-icon-window { --mask: var(--window); }
-.bm-history { margin-left: 4px; padding: 0 6px; }
-.bm-bar.bm-minimal { border-bottom-color: transparent; background: none !important; justify-content: flex-end; }
-.bm-bar.bm-minimal .bm-items { display: none; }
 .bm-meta { flex: none; margin-left: auto; padding-left: 12px; color: var(--muted); font-size: 12px; }
 .bm-header {
   padding: 6px 14px 4px;
@@ -385,3 +382,116 @@ body.has-wallpaper footer button { opacity: 0.85; }
 #wp-dialog input[type="range"] { padding: 0; border: 0; accent-color: var(--accent); }
 .hint { margin: 0; color: var(--muted); font-size: 12px; }
 body.drop-target #wallpaper { opacity: 1; outline: 4px dashed var(--accent); outline-offset: -12px; }
+
+/* Address bar */
+#omnibox {
+  position: relative;
+  width: min(100%, 680px);
+  margin-bottom: 36px;
+}
+.ob-row { display: flex; align-items: center; gap: 8px; }
+.ob-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--tile);
+  box-shadow: var(--shadow);
+}
+.ob-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+#ob-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 16px;
+}
+#ob-input::placeholder { color: var(--muted); }
+#ob-input::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.ob-search-icon, .ob-icon-search {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background: var(--muted);
+  -webkit-mask: var(--search) center / 18px no-repeat;
+  mask: var(--search) center / 18px no-repeat;
+}
+
+.ob-history {
+  width: 48px;
+  height: 48px;
+  max-width: none;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--tile);
+  box-shadow: var(--shadow);
+}
+.ob-history .bm-icon { width: 20px; height: 20px; -webkit-mask-size: 20px; mask-size: 20px; }
+.ob-history:hover, .ob-history[aria-expanded="true"] { background: var(--tile-hover); }
+
+#ob-list {
+  position: absolute;
+  left: 0;
+  right: 56px;
+  top: calc(100% + 6px);
+  z-index: 5;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--tile);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.18), 0 1px 3px rgb(0 0 0 / 0.1);
+}
+#ob-list[hidden] { display: none; }
+.ob-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 8px 0 18px;
+  cursor: default;
+}
+.ob-opt:hover { background: var(--tile-hover); }
+.ob-opt[aria-selected="true"] { background: color-mix(in srgb, var(--accent) 14%, var(--tile)); }
+.ob-opt img { width: 16px; height: 16px; flex: none; }
+.ob-opt .ob-icon-search { width: 16px; height: 16px; -webkit-mask-size: 16px; mask-size: 16px; }
+.ob-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ob-sub { color: var(--muted); }
+.ob-sub::before { content: " — "; }
+.ob-url { color: var(--accent); }
+.ob-tag { flex: none; color: var(--muted); font-size: 12px; }
+.ob-remove {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  visibility: hidden;
+}
+.ob-opt:hover .ob-remove, .ob-opt[aria-selected="true"] .ob-remove { visibility: visible; }
+.ob-remove:hover { background: rgb(127 127 127 / 0.2); color: var(--fg); }
+
+:root {
+  --search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.6' fill='none' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M10.4 10.4l3.6 3.6' stroke='black' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+}
