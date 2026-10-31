@@ -68,9 +68,13 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
 - Bookmarks that don't fit go behind a **»** button.
 - **Other bookmarks** (and Mobile bookmarks, if you have any) sit at the right
   end.
-- **Right-click** a bookmark, folder or the bar to open (in a new tab or
-  window, or open all), edit, rename, copy the link, add a page or folder,
-  delete (with **Undo**), or add a bookmark to your shortcuts. The built-in
+- **Right-click** a bookmark, folder or the bar (also inside the dropdowns):
+  - Folders: **Open all in tabs**, **in a new window** or **in an incognito
+    window**. Subfolders are included, and it asks first when that's more than
+    15 tabs.
+  - Bookmarks: open here, in a new tab, a new window or an incognito window.
+  - Edit, rename, copy the link, add a page or folder, delete (with **Undo**),
+    or add a bookmark to your shortcuts. The built-in
   root folders (Other bookmarks…) can't be renamed or deleted.
 - **Keyboard:** ↓ / Enter opens a folder, ↑ ↓ move through a menu, → opens a
   submenu, ← goes back, and Esc closes.

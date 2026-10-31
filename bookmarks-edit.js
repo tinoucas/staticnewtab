@@ -36,11 +36,17 @@
   // -------------------------------------------------------------------------
   // Actions
 
-  async function openAll(urls, { newWindow = false } = {}) {
+  // where: 'tabs' (background tabs here), 'window' or 'incognito'.
+  async function openAll(urls, where = 'tabs') {
     if (!urls.length) return;
     if (urls.length > OPEN_ALL_CONFIRM && !confirm(`Open ${urls.length} tabs?`)) return;
-    if (newWindow) {
-      await chrome.windows.create({ url: urls });
+    if (where === 'window' || where === 'incognito') {
+      try {
+        await chrome.windows.create({ url: urls, incognito: where === 'incognito' });
+      } catch (err) {
+        if (where === 'incognito') throw new Error(`Couldn't open an incognito window (${err.message}).`);
+        throw err;
+      }
     } else {
       for (const url of urls) await chrome.tabs.create({ url, active: false });
     }
@@ -169,7 +175,8 @@
       items.push(
         ['Open', () => openHere(node.url), !openable],
         ['Open in new tab', () => openAll([node.url]), !openable],
-        ['Open in new window', () => openAll([node.url], { newWindow: true }), !openable],
+        ['Open in new window', () => openAll([node.url], 'window'), !openable],
+        ['Open in incognito window', () => openAll([node.url], 'incognito'), !openable],
         sep,
         ['Edit…', () => edit(node), isLocked(node)],
         ['Copy link', () => navigator.clipboard.writeText(node.url)],
@@ -180,8 +187,9 @@
     } else if (node) {
       const n = urlsIn(node).length;
       items.push(
-        [`Open all (${n})`, async () => openAll(urlsIn(await fresh(node))), !n],
-        [`Open all in new window`, async () => openAll(urlsIn(await fresh(node)), { newWindow: true }), !n],
+        [`Open all (${n}) in tabs`, async () => openAll(urlsIn(await fresh(node))), !n],
+        [`Open all (${n}) in new window`, async () => openAll(urlsIn(await fresh(node)), 'window'), !n],
+        [`Open all (${n}) in incognito window`, async () => openAll(urlsIn(await fresh(node)), 'incognito'), !n],
         sep,
         ['Rename…', () => edit(node), isLocked(node)],
         ['Delete', () => remove(node), isLocked(node)],
