@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Static New Tab",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A pinned New Tab page with your own shortcuts. Navigating away from it turns it into a regular tab; new tabs reuse the pinned one.",
   "minimum_chrome_version": "116",
-  "permissions": ["tabs", "storage", "favicon"],
+  "permissions": ["tabs", "storage", "favicon", "bookmarks"],
   "background": {
     "service_worker": "background.js"
   },

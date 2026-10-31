@@ -10,7 +10,8 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
   New Tab.
 - **Close the pinned tab** → it comes back.
 - **New windows** get their own pinned New Tab.
-- **A plain shortcut page** instead of the browser's New Tab page.
+- **A plain shortcut page** instead of the browser's New Tab page, with your
+  **bookmarks** below the shortcuts.
 
 ## Your shortcuts
 
@@ -41,6 +42,18 @@ The JSON format is a plain list:
 Ctrl/Cmd-click or middle-click a shortcut to open it in a new tab without
 leaving the pinned one.
 
+## Bookmarks
+
+Below the shortcuts, each folder on your bookmarks bar gets its own card, and
+loose bookmarks go in a *Bookmarks bar* card. *Other bookmarks* and *Mobile
+bookmarks* follow, laid out the same way. Subfolders open and close inside
+their card, and the page remembers which ones you left open. The section updates
+as soon as you add, move or rename a bookmark.
+
+To hide the section, click **Edit**, then **Hide bookmarks**.
+Bookmarklets (`javascript:` bookmarks) are left out because they can't run
+from this page.
+
 ## Install (unpacked)
 
 1. Clone or download this repository.
@@ -56,6 +69,8 @@ Permissions:
 - `tabs` (shown as "Read your browsing history"): to see when the pinned tab
   leaves the New Tab page.
 - `favicon`: to show the favicons the browser has already cached.
+- `bookmarks`: to show your bookmarks (read-only; the extension never changes
+  them).
 - `storage`: for your shortcuts.
 
 Nothing is sent anywhere.

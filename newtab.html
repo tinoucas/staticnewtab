@@ -10,12 +10,14 @@
   <main>
     <nav id="grid" aria-label="Shortcuts"></nav>
     <p id="empty" hidden>No shortcuts yet. Click <strong>Add shortcut</strong> to create one.</p>
+    <section id="bookmarks" aria-label="Bookmarks" hidden></section>
   </main>
 
   <footer>
     <div id="edit-tools" hidden>
       <button type="button" id="import">Import</button>
       <button type="button" id="export">Export</button>
+      <button type="button" id="toggle-bookmarks">Hide bookmarks</button>
     </div>
     <button type="button" id="toggle-edit" title="Edit shortcuts" aria-pressed="false">Edit</button>
   </footer>
@@ -37,5 +39,6 @@
 
   <input type="file" id="import-file" accept="application/json,.json" hidden>
   <script src="newtab.js"></script>
+  <script src="bookmarks.js"></script>
 </body>
 </html>
