@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Static New Tab",
+  "version": "1.0.0",
+  "description": "Keeps a New Tab page pinned in every window. Navigating away from it turns it into a regular tab; new tabs reuse the pinned one.",
+  "minimum_chrome_version": "116",
+  "permissions": ["tabs", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
