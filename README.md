@@ -124,10 +124,9 @@ Whenever the extension starts with empty storage, it loads everything from that
 file. An install that already has data is never overwritten. Export again after
 you change things.
 
-`defaults/settings.json` is git-ignored: it stays on your computer and
-`git pull` leaves it alone. **This repository is public**, so only commit it
-(`git add -f defaults/settings.json`) if you're fine with your shortcuts and
-wallpaper being public.
+`defaults/settings.json` is git-ignored and never committed: it stays on your
+computer only, and `git pull` leaves it alone. If you clone this repository
+again somewhere else, copy the file across.
 
 **Import** (in Edit mode) restores a `settings.json` at any time. It also
 accepts the older shortcut-only export.
