@@ -16,6 +16,27 @@
   const box = document.getElementById('omnibox');
 
   const HIDDEN_KEY = 'omniboxHiddenHosts';
+  const ENGINE_KEY = 'searchEngine'; // { name, url with %s } — url '' = browser default
+
+  // Searches open the engine's URL in a new tab, like a typed URL: fast.
+  // The browser's own engine is only reachable through chrome.search.query,
+  // which can be slow (seconds in Helium), so it's an option, not the default.
+  const ENGINES = [
+    { name: 'Google', url: 'https://www.google.com/search?q=%s' },
+    { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=%s' },
+    { name: 'Bing', url: 'https://www.bing.com/search?q=%s' },
+    { name: 'Brave Search', url: 'https://search.brave.com/search?q=%s' },
+    { name: 'Startpage', url: 'https://www.startpage.com/sp/search?query=%s' },
+    { name: 'Kagi', url: 'https://kagi.com/search?q=%s' },
+    { name: 'Ecosia', url: 'https://www.ecosia.org/search?q=%s' },
+    { name: 'Qwant', url: 'https://www.qwant.com/?q=%s' },
+    { name: 'Browser default', url: '' },
+  ];
+  let engine = ENGINES[0];
+
+  function searchUrl(text) {
+    return engine.url.replace(/%s/g, encodeURIComponent(text).replace(/%20/g, '+'));
+  }
   const MAX_HISTORY = 6;
   const MAX_BOOKMARKS = 3;
   const DAY = 24 * 3600 * 1000;
@@ -204,7 +225,9 @@
       main.textContent = row.type === 'search' ? row.text : row.main;
       if (row.type === 'nav') main.className = 'ob-url';
       text.append(main);
-      const subText = row.type === 'search' ? 'Search the web' : row.sub;
+      const subText = row.type === 'search'
+        ? (engine.url ? `Search ${engine.name}` : 'Search the web')
+        : row.sub;
       if (subText) {
         const sub = document.createElement('span');
         sub.className = 'ob-sub';
@@ -312,8 +335,13 @@
     }
     if (row.type === 'search') {
       if (!row.text) return;
-      if (newTab) await chrome.search.query({ text: row.text, disposition: 'NEW_TAB' });
+      if (engine.url) await openUrl(searchUrl(row.text), { background: newTab && background });
+      else if (newTab) await chrome.search.query({ text: row.text, disposition: 'NEW_TAB' });
       else await chrome.search.query({ text: row.text, tabId });
+      if (engine.url && !newTab) {
+        input.value = typed = '';
+        close();
+      }
     } else {
       // A new tab, not this one: see openUrl() in newtab.js.
       await openUrl(row.url, { background: newTab && background });
@@ -445,8 +473,66 @@
   });
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && (changes.shortcuts || changes[HIDDEN_KEY])) hostsAt = 0;
+    if (area !== 'local') return;
+    if (changes.shortcuts || changes[HIDDEN_KEY]) hostsAt = 0;
+    if (changes[ENGINE_KEY]) setEngine(changes[ENGINE_KEY].newValue);
   });
+
+  // -------------------------------------------------------------------------
+  // Search engine setting (Edit → Search engine…)
+
+  const seDialog = document.getElementById('se-dialog');
+  const seSelect = document.getElementById('se-select');
+  const seCustom = document.getElementById('se-custom');
+  const seUrl = document.getElementById('se-url');
+  const seName = document.getElementById('se-name');
+
+  function setEngine(value) {
+    engine = value && typeof value.url === 'string' ? value : ENGINES[0];
+    input.placeholder = engine.url ? `Search ${engine.name} or type a URL` : 'Search or type a URL';
+  }
+
+  seSelect.replaceChildren(
+    ...ENGINES.map((e, i) => new Option(e.url ? e.name : 'Browser default (slower)', String(i))),
+    new Option('Custom…', 'custom')
+  );
+
+  function syncCustom() {
+    seCustom.hidden = seSelect.value !== 'custom';
+    seUrl.required = !seCustom.hidden;
+  }
+  seSelect.addEventListener('change', syncCustom);
+
+  document.getElementById('open-search-engine').addEventListener('click', () => {
+    const i = ENGINES.findIndex((e) => e.url === engine.url);
+    seSelect.value = i >= 0 ? String(i) : 'custom';
+    seName.value = i >= 0 ? '' : engine.name;
+    seUrl.value = i >= 0 ? '' : engine.url;
+    syncCustom();
+    seDialog.showModal();
+  });
+  document.getElementById('se-cancel').addEventListener('click', () => seDialog.close());
+
+  document.getElementById('se-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    let value;
+    if (seSelect.value === 'custom') {
+      const url = seUrl.value.trim();
+      if (!/^https?:\/\/.+%s/i.test(url)) {
+        seUrl.setCustomValidity('Use a full http(s) address containing %s where the search goes.');
+        seUrl.reportValidity();
+        return;
+      }
+      value = { name: seName.value.trim() || new URL(url.replace(/%s/g, 'x')).hostname.replace(/^www\./, ''), url };
+    } else {
+      value = ENGINES[Number(seSelect.value)];
+    }
+    chrome.storage.local.set({ [ENGINE_KEY]: value });
+    seDialog.close();
+  });
+  seUrl.addEventListener('input', () => seUrl.setCustomValidity(''));
+
+  chrome.storage.local.get(ENGINE_KEY).then((data) => setEngine(data[ENGINE_KEY]));
 
   buildIndex().catch(console.error);
   grabFocus();

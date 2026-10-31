@@ -42,6 +42,7 @@
       <button type="button" id="export" title="Save shortcuts, wallpaper and settings to settings.json">Export</button>
       <button type="button" id="toggle-bookmarks">Hide bookmarks</button>
       <button type="button" id="open-wallpaper">Wallpaper…</button>
+      <button type="button" id="open-search-engine">Search engine…</button>
     </div>
     <button type="button" id="toggle-edit" title="Edit shortcuts" aria-pressed="false">Edit</button>
   </footer>
@@ -69,6 +70,28 @@
       <div class="actions">
         <span class="spacer"></span>
         <button type="button" id="bm-cancel">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="se-dialog">
+    <form method="dialog" id="se-form">
+      <h2>Search engine</h2>
+      <label>Search with
+        <select id="se-select"></select>
+      </label>
+      <div id="se-custom" hidden>
+        <label>Name <input id="se-name" autocomplete="off" placeholder="Optional"></label>
+        <label>Search URL <input id="se-url" type="text" autocomplete="off" spellcheck="false"
+               placeholder="https://example.com/search?q=%s"></label>
+        <p class="hint">%s is replaced by what you type.</p>
+      </div>
+      <p class="hint">Searches open like a typed address, which is fast. "Browser
+        default" uses Helium's own search engine, but can take several seconds.</p>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button type="button" id="se-cancel">Cancel</button>
         <button type="submit" class="primary">Save</button>
       </div>
     </form>

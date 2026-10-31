@@ -28,7 +28,8 @@
 - Open pages from the page with `openUrl()` (newtab.js, chrome.tabs.create),
   never by navigating the pinned tab (links, chrome.tabs.update,
   location.href): those are sent as cross-site requests without SameSite=Strict
-  cookies. Searches use chrome.search.query, which is sent like a typed search.
+  cookies. Searches open the chosen engine's URL with `openUrl()` too;
+  chrome.search.query (option "Browser default") takes seconds in Helium.
 - Test with the pre-installed Playwright Chromium by loading the extension with
   `--disable-extensions-except` / `--load-extension` in a persistent context,
   and drive tabs through the service worker (`chrome.tabs.*`).

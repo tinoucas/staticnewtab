@@ -13,7 +13,7 @@ const Settings = (() => {
   const WALLPAPER = 'wallpaper';
   const DEFAULTS_PATH = 'defaults/settings.json';
   // Plain settings copied as-is (the wallpaper is handled separately).
-  const KEYS = ['shortcuts', 'showBookmarks', 'omniboxHiddenHosts', 'incognitoIds'];
+  const KEYS = ['shortcuts', 'showBookmarks', 'omniboxHiddenHosts', 'incognitoIds', 'searchEngine'];
 
   // -------------------------------------------------------------------------
   // IndexedDB (the wallpaper image)

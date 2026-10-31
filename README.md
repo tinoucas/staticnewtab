@@ -25,13 +25,19 @@ else on the page goes into it too.
   field, with the completed part selected. Keep typing to ignore it, or press
   → / End / Tab to accept it. Domains are ranked by how often you visit them
   (sites you typed count most), plus your bookmarks and shortcuts.
-- **Suggestions below:** what Enter will do, a web search (with your default
-  search engine), matching bookmarks and pages from your history. Pick one
+- **Suggestions below:** what Enter will do, a web search, matching bookmarks and pages from your history. Pick one
   with ↑ / ↓ or the mouse.
 - **× on a suggestion** (or Shift+Delete on the selected one):
   - on a **history page**, deletes that page from your browser history;
   - on a **domain** completion, stops suggesting that domain here. Your
     history is left alone. The list is kept in the extension's storage.
+- **Search engine:** Google by default. Change it under **Edit → Search
+  engine…**: DuckDuckGo, Bing, Brave Search, Startpage, Kagi, Ecosia, Qwant,
+  a custom URL (`%s` stands for your search), or *Browser default*. Searches
+  open the engine's URL directly, which is as fast as typing an address.
+  *Browser default* uses Helium's own engine through the browser's search
+  API, which can take several seconds (Helium doesn't let extensions read
+  which engine you picked).
 - Alt+Enter, Ctrl/Cmd-click or middle-click opens in a new tab.
 - Esc steps back: to what you typed, then closes the list, then clears the
   field.
@@ -195,8 +201,8 @@ stays as it is. This matters for sign-ins: a site opened in a new tab
 receives the same request as a URL typed in the browser's address bar,
 including `SameSite=Strict` cookies. If the pinned tab navigated itself, the
 browser would send it as a cross-site request without those cookies, and
-sites like Google could treat you as half signed-out. Searches go through the
-browser's search API, which already sends them like a typed search.
+sites like Google could treat you as half signed-out. Searches open the
+search engine's URL the same way.
 
 When you press `+` or Ctrl+T, the browser opens a new tab. The extension
 closes it right away and switches to the pinned New Tab. Closing it before it
