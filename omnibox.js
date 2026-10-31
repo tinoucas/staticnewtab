@@ -152,7 +152,13 @@
     for (const b of bookmarks) {
       if (out.filter((r) => r.type === 'bookmark').length >= MAX_BOOKMARKS) break;
       if (!b.url || /^javascript:/i.test(b.url) || taken(b.url)) continue;
-      out.push({ type: 'bookmark', url: b.url, main: b.title || display(b.url), sub: display(b.url) });
+      out.push({
+        type: 'bookmark',
+        url: b.url,
+        main: b.title || display(b.url),
+        sub: display(b.url),
+        incognito: !!window.bookmarksBar?.incognitoSource(b.id),
+      });
     }
     history
       .filter((h) => /^(https?|file|ftp):/i.test(h.url) && !taken(h.url))
@@ -210,7 +216,7 @@
       if (row.type === 'bookmark') {
         const tag = document.createElement('span');
         tag.className = 'ob-tag';
-        tag.textContent = 'Bookmark';
+        tag.textContent = row.incognito ? 'Bookmark · incognito' : 'Bookmark';
         li.append(tag);
       }
       if (row.type === 'history' || row.host) {
@@ -300,6 +306,10 @@
   async function go(row, { newTab = false, background = false } = {}) {
     if (!row) return;
     if (!tabId) tabId = (await chrome.tabs.getCurrent())?.id;
+    if (row.incognito) {
+      await window.bookmarksBar.openWindow([row.url], { incognito: true });
+      return;
+    }
     if (row.type === 'search') {
       if (!row.text) return;
       if (newTab) await chrome.search.query({ text: row.text, disposition: 'NEW_TAB' });

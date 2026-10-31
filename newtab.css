@@ -495,3 +495,20 @@ body.drop-target #wallpaper { opacity: 1; outline: 4px dashed var(--accent); out
 :root {
   --search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.6' fill='none' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M10.4 10.4l3.6 3.6' stroke='black' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
 }
+
+/* Incognito */
+.bm-check { flex: none; width: 14px; margin-right: 6px; text-align: center; }
+.bm-ctx-item { padding-left: 10px; }
+.bm-incognito-mark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  opacity: 0.55;
+  -webkit-mask: var(--incognito) center / 14px no-repeat;
+  mask: var(--incognito) center / 14px no-repeat;
+}
+.bm-menu-item .bm-incognito-mark { margin-left: auto; }
+:root {
+  --incognito: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 6.6L5.4 2.4h5.2l1.2 4.2z' fill='black'/%3E%3Cpath d='M1 7.4h14' stroke='black' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='4.8' cy='11.4' r='2.2' fill='none' stroke='black' stroke-width='1.3'/%3E%3Ccircle cx='11.2' cy='11.4' r='2.2' fill='none' stroke='black' stroke-width='1.3'/%3E%3Cpath d='M7 11.2q1-.7 2 0' fill='none' stroke='black' stroke-width='1.2'/%3E%3C/svg%3E");
+}

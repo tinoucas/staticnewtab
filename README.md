@@ -75,6 +75,15 @@ The top of the page has a bar that works like the browser's own bookmarks bar.
   - Bookmarks: open here, in a new tab, a new window or an incognito window.
   - New and incognito windows open with the same size and position as the
     window you're in, or maximized / fullscreen like it.
+  - **Always open in incognito** (bookmarks and folders) marks it with a
+    check mark. From then on it opens in an incognito window however you open
+    it: click, middle-click, Open all, or from the address bar suggestions.
+    On a folder it covers everything inside, subfolders included; the items
+    inside then show the setting greyed out, since it can only be changed on
+    the folder. Such bookmarks carry a small incognito icon. The setting is
+    included in **Export**.
+- **Middle-click a folder** to open everything in it: in tabs, or in an
+  incognito window for bookmarks set to always open in incognito.
   - Edit, rename, copy the link, add a page or folder, delete (with **Undo**),
     or add a bookmark to your shortcuts. The built-in
   root folders (Other bookmarks…) can't be renamed or deleted.

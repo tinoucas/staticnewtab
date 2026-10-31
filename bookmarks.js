@@ -17,6 +17,12 @@
   let hiddenNodes = [];   // the ones pushed into the » menu
   let barRootId = null;
 
+  // Bookmarks/folders set to always open in incognito (a folder covers
+  // everything inside it). nodeById lets us walk up to parent folders.
+  const INCOGNITO_KEY = 'incognitoIds';
+  let incognitoIds = new Set();
+  let nodeById = new Map();
+
   // -------------------------------------------------------------------------
   // Helpers
 
@@ -54,6 +60,51 @@
     return span;
   }
 
+  // The id this node's incognito setting comes from (itself or a parent
+  // folder), or null.
+  function incognitoSource(id) {
+    for (let n = id; n; n = nodeById.get(n)?.parentId) {
+      if (incognitoIds.has(n)) return n;
+    }
+    return null;
+  }
+
+  async function toggleIncognito(id) {
+    // Read the stored list (not our copy) so quick successive changes,
+    // e.g. undoing a deleted folder, don't overwrite each other.
+    const ids = new Set((await chrome.storage.local.get(INCOGNITO_KEY))[INCOGNITO_KEY] || []);
+    if (ids.has(id)) ids.delete(id);
+    else ids.add(id);
+    incognitoIds = ids;
+    await chrome.storage.local.set({ [INCOGNITO_KEY]: [...ids] });
+  }
+
+  // Open new windows over the current one: same size and position, or
+  // maximized / fullscreen like it. (Incognito windows otherwise open at a
+  // small default size.)
+  async function currentBounds() {
+    try {
+      const win = await chrome.windows.getCurrent();
+      if (win.state === 'maximized' || win.state === 'fullscreen') return { state: win.state };
+      return { left: win.left, top: win.top, width: win.width, height: win.height };
+    } catch {
+      return {};
+    }
+  }
+
+  async function openWindow(urls, { incognito = false } = {}) {
+    if (!urls.length) return;
+    const options = { url: urls, incognito };
+    try {
+      // Bounds can be refused (e.g. the window is mostly off-screen):
+      // then open with the browser's default size.
+      await chrome.windows.create({ ...options, ...(await currentBounds()) })
+        .catch(() => chrome.windows.create(options));
+    } catch (err) {
+      throw new Error(incognito ? `Couldn't open an incognito window (${err.message}).` : err.message);
+    }
+  }
+
   function label(text) {
     const span = document.createElement('span');
     span.className = 'bm-title';
@@ -86,6 +137,13 @@
     // Like the browser's bar, an untitled bookmark shows only its icon.
     const text = node.title || (inBar ? '' : node.url ? hostOf(node.url) : 'Untitled folder');
     if (text) el.append(label(text));
+    if (!node.kind && incognitoSource(node.id)) {
+      const mark = document.createElement('span');
+      mark.className = 'bm-incognito-mark';
+      mark.title = 'Opens in incognito';
+      el.append(mark);
+      el.title = `${el.title}\n(opens in incognito)`.trim();
+    }
     if (node.meta) {
       const meta = document.createElement('span');
       meta.className = 'bm-meta';
@@ -251,6 +309,12 @@
     const a = e.target.closest('a.bm-item, a.bm-menu-item');
     if (!a) return;
     const background = e.ctrlKey || e.metaKey || e.button === 1;
+    if (a.bmNode && !a.bmNode.kind && incognitoSource(a.bmNode.id)) {
+      e.preventDefault();
+      closeMenus();
+      openWindow([a.href], { incognito: true }).catch((err) => alert(err.message));
+      return;
+    }
     if (isWeb(a.href)) {
       if (background) closeMenus();
       return;
@@ -347,12 +411,20 @@
   async function render() {
     toggle.textContent = show ? 'Hide bookmarks' : 'Show bookmarks';
     closeMenus();
+
+    const [tree] = await chrome.bookmarks.getTree();
+    nodeById = new Map();
+    const index = (n) => {
+      nodeById.set(n.id, n);
+      (n.children || []).forEach(index);
+    };
+    index(tree);
+
     if (!show) {
       bar.hidden = true;
       return;
     }
 
-    const [tree] = await chrome.bookmarks.getTree();
     const roots = rootsOf(tree);
     barRootId = roots['bookmarks-bar'][0]?.id;
 
@@ -372,7 +444,15 @@
   // Used by bookmarks-edit.js (right-click menu).
   // toggleMenu also opens menus for buttons outside the bar (.bm-opener,
   // e.g. History next to the address bar).
-  window.bookmarksBar = { closeMenus, barRootId: () => barRootId, toggleMenu: toggleFromBar };
+  window.bookmarksBar = {
+    closeMenus,
+    barRootId: () => barRootId,
+    toggleMenu: toggleFromBar,
+    openWindow,
+    incognitoSource,
+    toggleIncognito,
+    nodeTitle: (id) => nodeById.get(id)?.title || '',
+  };
 
   let pending = 0;
   function scheduleRender() {
@@ -385,17 +465,19 @@
   });
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local' || !changes[SHOW_KEY]) return;
-    show = changes[SHOW_KEY].newValue !== false;
-    scheduleRender();
+    if (area !== 'local') return;
+    if (changes[SHOW_KEY]) show = changes[SHOW_KEY].newValue !== false;
+    if (changes[INCOGNITO_KEY]) incognitoIds = new Set(changes[INCOGNITO_KEY].newValue || []);
+    if (changes[SHOW_KEY] || changes[INCOGNITO_KEY]) scheduleRender();
   });
 
   for (const ev of ['onCreated', 'onRemoved', 'onChanged', 'onMoved', 'onChildrenReordered', 'onImportEnded']) {
     chrome.bookmarks[ev]?.addListener(scheduleRender);
   }
 
-  chrome.storage.local.get(SHOW_KEY).then((data) => {
+  chrome.storage.local.get([SHOW_KEY, INCOGNITO_KEY]).then((data) => {
     show = data[SHOW_KEY] !== false;
+    incognitoIds = new Set(data[INCOGNITO_KEY] || []);
     render().catch(console.error);
   });
 })();

@@ -21,9 +21,9 @@
   const isLocked = (node) => isRoot(node) || node.unmodifiable === 'managed';
   const isOpenable = (url) => url && !/^javascript:/i.test(url);
 
-  function urlsIn(node) {
-    if (node.url) return isOpenable(node.url) ? [node.url] : [];
-    return (node.children || []).flatMap(urlsIn);
+  function linksIn(node) {
+    if (node.url) return isOpenable(node.url) ? [node] : [];
+    return (node.children || []).flatMap(linksIn);
   }
 
   // Bookmarks in the bar come from getTree(); re-read before acting so
@@ -36,42 +36,27 @@
   // -------------------------------------------------------------------------
   // Actions
 
-  // Open new windows over the current one: same size and position, or
-  // maximized / fullscreen like it. (Incognito windows otherwise open at a
-  // small default size.)
-  async function currentBounds() {
-    try {
-      const win = await chrome.windows.getCurrent();
-      if (win.state === 'maximized' || win.state === 'fullscreen') return { state: win.state };
-      return { left: win.left, top: win.top, width: win.width, height: win.height };
-    } catch {
-      return {};
-    }
-  }
+  const B = () => window.bookmarksBar;
+  const flagged = (n) => !!B().incognitoSource(n.id);
 
   // where: 'tabs' (background tabs here), 'window' or 'incognito'.
-  async function openAll(urls, where = 'tabs') {
-    if (!urls.length) return;
-    if (urls.length > OPEN_ALL_CONFIRM && !confirm(`Open ${urls.length} tabs?`)) return;
-    if (where === 'window' || where === 'incognito') {
-      try {
-        const options = { url: urls, incognito: where === 'incognito' };
-        // Bounds can be refused (e.g. the window is mostly off-screen):
-        // then open with the browser's default size.
-        await chrome.windows.create({ ...options, ...(await currentBounds()) })
-          .catch(() => chrome.windows.create(options));
-      } catch (err) {
-        if (where === 'incognito') throw new Error(`Couldn't open an incognito window (${err.message}).`);
-        throw err;
-      }
-    } else {
-      for (const url of urls) await chrome.tabs.create({ url, active: false });
-    }
+  // Bookmarks set to always open in incognito go to an incognito window
+  // whatever is chosen.
+  async function openAll(nodes, where = 'tabs') {
+    if (!nodes.length) return;
+    if (nodes.length > OPEN_ALL_CONFIRM && !confirm(`Open ${nodes.length} tabs?`)) return;
+    const incognito = where === 'incognito' ? nodes : nodes.filter(flagged);
+    const normal = where === 'incognito' ? [] : nodes.filter((n) => !flagged(n));
+    if (incognito.length) await B().openWindow(incognito.map((n) => n.url), { incognito: true });
+    if (!normal.length) return;
+    if (where === 'window') await B().openWindow(normal.map((n) => n.url));
+    else for (const n of normal) await chrome.tabs.create({ url: n.url, active: false });
   }
 
-  async function openHere(url) {
+  async function openHere(node) {
+    if (flagged(node)) return openAll([node], 'incognito');
     const tab = await chrome.tabs.getCurrent();
-    chrome.tabs.update(tab.id, { url });
+    chrome.tabs.update(tab.id, { url: node.url });
   }
 
   function ask({ title, name = '', url = null }) {
@@ -131,7 +116,7 @@
 
   async function remove(node) {
     node = await fresh(node);
-    const count = urlsIn(node).length;
+    const count = linksIn(node).length;
     if (!node.url && count > 0 && !confirm(`Delete “${node.title}” and the ${count} bookmark(s) in it?`)) return;
     if (node.url) await chrome.bookmarks.remove(node.id);
     else await chrome.bookmarks.removeTree(node.id);
@@ -145,6 +130,8 @@
       title: node.title,
       ...(node.url ? { url: node.url } : {}),
     });
+    // Keep its "always open in incognito" setting.
+    if (B().incognitoSource(node.id) === node.id) await B().toggleIncognito(created.id);
     for (const child of node.children || []) await restore(child, created.id);
   }
 
@@ -183,6 +170,20 @@
   // -------------------------------------------------------------------------
   // Menu
 
+  // "Always open in incognito", checked when set here or on a parent
+  // folder (then it can only be changed on that folder).
+  function incognitoItem(node) {
+    const source = B().incognitoSource(node.id);
+    const inherited = source && source !== node.id;
+    return {
+      text: 'Always open in incognito',
+      checked: !!source,
+      disabled: inherited,
+      title: inherited ? `Set on the folder “${B().nodeTitle(source)}”` : '',
+      run: () => B().toggleIncognito(node.id),
+    };
+  }
+
   function itemsFor(node, parentForAdd) {
     const sep = '-';
     const openable = node && isOpenable(node.url);
@@ -190,10 +191,11 @@
 
     if (node?.url) {
       items.push(
-        ['Open', () => openHere(node.url), !openable],
-        ['Open in new tab', () => openAll([node.url]), !openable],
-        ['Open in new window', () => openAll([node.url], 'window'), !openable],
-        ['Open in incognito window', () => openAll([node.url], 'incognito'), !openable],
+        ['Open', () => openHere(node), !openable],
+        ['Open in new tab', () => openAll([node]), !openable],
+        ['Open in new window', () => openAll([node], 'window'), !openable],
+        ['Open in incognito window', () => openAll([node], 'incognito'), !openable],
+        incognitoItem(node),
         sep,
         ['Edit…', () => edit(node), isLocked(node)],
         ['Copy link', () => navigator.clipboard.writeText(node.url)],
@@ -202,11 +204,12 @@
         sep
       );
     } else if (node) {
-      const n = urlsIn(node).length;
+      const n = linksIn(node).length;
       items.push(
-        [`Open all (${n}) in tabs`, async () => openAll(urlsIn(await fresh(node))), !n],
-        [`Open all (${n}) in new window`, async () => openAll(urlsIn(await fresh(node)), 'window'), !n],
-        [`Open all (${n}) in incognito window`, async () => openAll(urlsIn(await fresh(node)), 'incognito'), !n],
+        [`Open all (${n}) in tabs`, async () => openAll(linksIn(await fresh(node))), !n],
+        [`Open all (${n}) in new window`, async () => openAll(linksIn(await fresh(node)), 'window'), !n],
+        [`Open all (${n}) in incognito window`, async () => openAll(linksIn(await fresh(node)), 'incognito'), !n],
+        incognitoItem(node),
         sep,
         ['Rename…', () => edit(node), isLocked(node)],
         ['Delete', () => remove(node), isLocked(node)],
@@ -250,14 +253,26 @@
         li.className = 'bm-sep';
         li.setAttribute('role', 'separator');
       } else {
-        const [text, run, disabled] = it;
+        const { text, run, disabled, checked, title } = Array.isArray(it)
+          ? { text: it[0], run: it[1], disabled: it[2] }
+          : it;
         li.setAttribute('role', 'none');
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'bm-ctx-item';
-        btn.setAttribute('role', 'menuitem');
-        btn.textContent = text;
+        const check = document.createElement('span');
+        check.className = 'bm-check';
+        check.setAttribute('aria-hidden', 'true');
+        if (checked !== undefined) {
+          btn.setAttribute('role', 'menuitemcheckbox');
+          btn.setAttribute('aria-checked', String(checked));
+          check.textContent = checked ? '✓' : '';
+        } else {
+          btn.setAttribute('role', 'menuitem');
+        }
+        btn.append(check, text);
         btn.disabled = !!disabled;
+        if (title) btn.title = title;
         btn.addEventListener('click', () => {
           closeContext();
           window.bookmarksBar.closeMenus();
@@ -296,6 +311,28 @@
     else if (el?.bmParent) openContext(e, null, el.bmParent.id, el);
     else if (el?.classList.contains('bm-overflow') || inBar) {
       openContext(e, null, window.bookmarksBar.barRootId(), el || bar);
+    }
+  });
+
+  // Middle-click a folder (on the bar or in a dropdown): open all of it,
+  // in tabs or, for bookmarks set that way, in an incognito window.
+  const folderAt = (e) => {
+    const el = e.target.closest('button.bm-item, button.bm-menu-item');
+    const node = el?.bmNode;
+    return node && !node.kind && !node.url ? node : null;
+  };
+  document.addEventListener('mousedown', (e) => {
+    if (e.button === 1 && folderAt(e)) e.preventDefault(); // no autoscroll
+  });
+  document.addEventListener('auxclick', async (e) => {
+    const node = e.button === 1 && folderAt(e);
+    if (!node) return;
+    e.preventDefault();
+    B().closeMenus();
+    try {
+      await openAll(linksIn(await fresh(node)));
+    } catch (err) {
+      alert(err.message);
     }
   });
 
