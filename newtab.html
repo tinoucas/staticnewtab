@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Tab</title>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <main>
+    <nav id="grid" aria-label="Shortcuts"></nav>
+    <p id="empty" hidden>No shortcuts yet. Click <strong>Add shortcut</strong> to create one.</p>
+  </main>
+
+  <footer>
+    <div id="edit-tools" hidden>
+      <button type="button" id="import">Import</button>
+      <button type="button" id="export">Export</button>
+    </div>
+    <button type="button" id="toggle-edit" title="Edit shortcuts" aria-pressed="false">Edit</button>
+  </footer>
+
+  <dialog id="dialog">
+    <form method="dialog" id="form">
+      <h2 id="dialog-title">Add shortcut</h2>
+      <label>Name <input id="f-name" autocomplete="off" placeholder="Optional"></label>
+      <label>URL <input id="f-url" type="text" required autocomplete="off" placeholder="example.com"></label>
+      <label>Icon URL <input id="f-icon" autocomplete="off" placeholder="Optional — defaults to the site's favicon"></label>
+      <div class="actions">
+        <button type="button" id="delete" class="danger">Delete</button>
+        <span class="spacer"></span>
+        <button type="button" id="cancel">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <script src="newtab.js"></script>
+</body>
+</html>

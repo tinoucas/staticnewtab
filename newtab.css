@@ -1,0 +1,177 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f6f4;
+  --fg: #1d1d1f;
+  --muted: #6e6e73;
+  --tile: #ffffff;
+  --tile-hover: #ececea;
+  --border: #dcdcd8;
+  --accent: #2f6fde;
+  --danger: #c4302b;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1b1d;
+    --fg: #ececee;
+    --muted: #9a9aa0;
+    --tile: #2a2a2d;
+    --tile-hover: #353539;
+    --border: #3a3a3e;
+    --accent: #6d9cf0;
+    --danger: #ef6b65;
+    --shadow: none;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+#grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(8 * 112px + 7 * 8px);
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 112px;
+  padding: 14px 6px 10px;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  outline-offset: 2px;
+}
+.tile:hover, .tile:focus-visible { background: var(--tile-hover); }
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tile);
+  box-shadow: var(--shadow);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--muted);
+  overflow: hidden;
+}
+.icon img { width: 28px; height: 28px; object-fit: contain; }
+
+.label {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.add .icon { font-size: 26px; font-weight: 400; }
+
+/* Edit mode */
+.editing .tile:not(.add) { cursor: grab; }
+.editing .tile:not(.add) .icon { outline: 1px dashed var(--border); outline-offset: 3px; }
+.tile.dragging { opacity: 0.35; }
+.tile.drop-before { box-shadow: inset 3px 0 0 var(--accent); }
+.tile.drop-after { box-shadow: inset -3px 0 0 var(--accent); }
+
+.remove {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--tile);
+  color: var(--muted);
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: none;
+  place-items: center;
+}
+.editing .remove { display: grid; }
+.remove:hover { color: var(--danger); border-color: var(--danger); }
+
+#empty { color: var(--muted); margin-top: 16px; }
+
+footer {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+}
+#edit-tools { display: flex; gap: 8px; }
+#edit-tools[hidden] { display: none; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--tile);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:hover { background: var(--tile-hover); }
+footer button { opacity: 0.55; }
+footer button:hover, footer button:focus-visible, .editing footer button { opacity: 1; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { color: var(--danger); }
+
+dialog {
+  width: min(400px, calc(100vw - 32px));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 20px;
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.35); }
+dialog h2 { margin: 0 0 14px; font-size: 16px; }
+dialog label { display: block; margin-bottom: 12px; color: var(--muted); font-size: 12px; }
+dialog input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--tile);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+dialog input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.actions { display: flex; gap: 8px; margin-top: 18px; }
+.spacer { flex: 1; }

@@ -10,9 +10,36 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
   New Tab.
 - **Close the pinned tab** → it comes back.
 - **New windows** get their own pinned New Tab.
+- **A plain shortcut page** instead of the browser's New Tab page.
 
-The extension uses the browser's own New Tab page (or whichever New Tab
-extension you use). It doesn't replace the page.
+## Your shortcuts
+
+Click **Edit** (bottom right) to:
+
+- **Add** a shortcut with the *Add shortcut* tile (name, URL, optional icon URL),
+- **Edit** one by clicking it, or **remove** it with ×,
+- **Reorder** by dragging tiles,
+- **Import / Export** the list as JSON, to back it up or move it to another
+  browser.
+
+Click **Done** or press Esc to finish. Changes show up at once in every open
+New Tab, including the pinned tab in each window.
+
+Icons are the site favicons the browser has already cached (the extension makes
+no network request for them). A site you haven't visited yet shows its first
+letter until you've been there once.
+
+The JSON format is a plain list:
+
+```json
+[
+  { "name": "Mail", "url": "https://mail.proton.me" },
+  { "name": "GitHub", "url": "https://github.com", "icon": "https://github.com/favicon.ico" }
+]
+```
+
+Ctrl/Cmd-click or middle-click a shortcut to open it in a new tab without
+leaving the pinned one.
 
 ## Install (unpacked)
 
@@ -21,10 +48,17 @@ extension you use). It doesn't replace the page.
 3. Turn on **Developer mode** (top right).
 4. Click **Load unpacked** and pick this folder.
 
-It asks for the `tabs` permission (shown as "Read your browsing history").
-It needs this to see when the pinned tab leaves the New Tab page. Nothing is
-stored or sent anywhere. The only state is a tab-ID-per-window map in
-`chrome.storage.session`.
+Because it replaces the New Tab page, Helium may ask whether to keep the
+change. Choose **Keep it**.
+
+Permissions:
+
+- `tabs` (shown as "Read your browsing history"): to see when the pinned tab
+  leaves the New Tab page.
+- `favicon`: to show the favicons the browser has already cached.
+- `storage`: for your shortcuts.
+
+Nothing is sent anywhere.
 
 ## How it works
 
