@@ -12,7 +12,7 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
 - **New windows** get their own pinned New Tab.
 - **A plain page of your own** instead of the browser's New Tab page: an
   **address bar** with domain autocompletion, a **History** button (recently
-  closed tabs, recently visited pages), your **shortcuts**, a **bookmarks
+  closed tabs), your **shortcuts**, a **bookmarks
   bar** and an optional **wallpaper**.
 
 ## Address bar
@@ -87,9 +87,8 @@ To hide the bar, click **Edit**, then **Hide bookmarks**. Bookmarklets
 
 The clock button right of the address bar opens a menu with:
 
-- **Recently closed** tabs and windows. Clicking one restores it with its
-  back/forward history, like Ctrl+Shift+T.
-- **Recently visited** pages. Clicking one opens it like a bookmark.
+- **Recently closed** tabs and windows (up to 15). Clicking one restores it
+  with its back/forward history, like Ctrl+Shift+T.
 - **Show full history**, which opens the browser's History page.
 
 ## Wallpaper
@@ -149,8 +148,8 @@ Permissions:
 - `bookmarks`: to show your bookmarks and edit them from the right-click
   menu. Nothing changes unless you choose an action.
 - `sessions`: for the *Recently closed* list.
-- `history`: for address bar suggestions and the *Recently visited* list. The
-  extension only deletes a page when you click × on it.
+- `history`: for address bar suggestions. The extension only deletes a page
+  when you click × on it.
 - `search`: to search with your default search engine from the address bar.
 - `storage`, `unlimitedStorage`: for your shortcuts, settings and wallpaper.
   The browser won't clear them to free up space.

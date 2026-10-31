@@ -11,7 +11,7 @@
   - `bookmarks-edit.js`: right-click menu for bookmarks
   - `omnibox.js`: the in-page address bar (inline domain completion,
     suggestions)
-  - `history.js`: History button next to the address bar (reuses the
+  - `history.js`: History button (recently closed) next to the address bar (reuses the
     bookmarks bar's menu system)
   - `wallpaper.js`: background image, stored in IndexedDB
   - `icon.svg`: favicon of the pinned tab

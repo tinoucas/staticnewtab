@@ -1,12 +1,11 @@
-// Static New Tab — History button on the bookmarks bar.
+// Static New Tab — History button next to the address bar.
 // Its menu lists recently closed tabs/windows (restored with their
-// back/forward history), recently visited pages, and a link to the full
-// history page. Entries are read each time the menu opens.
+// back/forward history) and a link to the full history page. Entries are
+// read each time the menu opens.
 
 (() => {
   const button = document.querySelector('.bm-history');
-  const MAX_CLOSED = 10;
-  const MAX_VISITED = 10;
+  const MAX_CLOSED = 15;
   const isMac = /Mac/i.test(navigator.platform);
 
   const ownPages = chrome.runtime.getURL('');
@@ -55,32 +54,11 @@
     return nodes;
   }
 
-  async function recentlyVisited() {
-    const items = await chrome.history.search({
-      text: '',
-      startTime: Date.now() - 30 * 24 * 3600 * 1000,
-      maxResults: 100,
-    });
-    const seen = new Set();
-    return items
-      .filter((h) => /^(https?|file):/i.test(h.url))
-      .sort((a, b) => (b.lastVisitTime || 0) - (a.lastVisitTime || 0))
-      .filter((h) => !seen.has(h.url) && seen.add(h.url))
-      .slice(0, MAX_VISITED)
-      .map((h) => ({ kind: 'link', url: h.url, title: h.title || h.url, meta: ago(h.lastVisitTime) }));
-  }
-
   async function load() {
-    const [closed, visited] = await Promise.all([
-      recentlyClosed().catch(() => []),
-      recentlyVisited().catch(() => []),
-    ]);
+    const closed = await recentlyClosed().catch(() => []);
     return [
       { kind: 'header', title: 'Recently closed' },
       ...(closed.length ? closed : [{ kind: 'note', title: 'Nothing closed recently' }]),
-      { kind: 'separator' },
-      { kind: 'header', title: 'Recently visited' },
-      ...(visited.length ? visited : [{ kind: 'note', title: 'No history yet' }]),
       { kind: 'separator' },
       {
         kind: 'action',
