@@ -3,7 +3,7 @@
 - Commit and push directly to `main`. No feature branches or pull requests
   needed.
 - This is an unpacked Chromium MV3 extension (Helium is the target browser).
-  There is no build step: `manifest.json`, `background.js` (pinned-tab logic)
+  There is no build step: `manifest.json`, `background.js` (pinned-tab logic),
   `newtab.*` (shortcut page) and `bookmarks.js` (bookmarks section of that page)
   are loaded as-is.
 - Test with the pre-installed Playwright Chromium by loading the extension with
