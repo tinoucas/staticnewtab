@@ -314,13 +314,15 @@
       if (!row.text) return;
       if (newTab) await chrome.search.query({ text: row.text, disposition: 'NEW_TAB' });
       else await chrome.search.query({ text: row.text, tabId });
-    } else if (newTab) {
-      await chrome.tabs.create({ url: row.url, active: !background });
     } else {
-      await chrome.tabs.update(tabId, { url: row.url });
+      // A new tab, not this one: see openUrl() in newtab.js.
+      await openUrl(row.url, { background: newTab && background });
     }
     if (newTab) {
       input.select();
+      close();
+    } else if (row.type !== 'search') {
+      input.value = typed = '';
       close();
     }
   }

@@ -55,8 +55,7 @@
 
   async function openHere(node) {
     if (flagged(node)) return openAll([node], 'incognito');
-    const tab = await chrome.tabs.getCurrent();
-    chrome.tabs.update(tab.id, { url: node.url });
+    await openUrl(node.url);
   }
 
   function ask({ title, name = '', url = null }) {

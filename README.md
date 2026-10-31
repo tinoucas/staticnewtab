@@ -189,6 +189,15 @@ own address bar, but an extension page can. That's what lets the in-page
 address bar get the cursor. The browser's address bar shows that extension URL
 on the pinned tab.
 
+Pages you open from the pinned tab (shortcuts, bookmarks, URLs typed in its
+address bar) open in a new tab at the end of the strip, and the pinned tab
+stays as it is. This matters for sign-ins: a site opened in a new tab
+receives the same request as a URL typed in the browser's address bar,
+including `SameSite=Strict` cookies. If the pinned tab navigated itself, the
+browser would send it as a cross-site request without those cookies, and
+sites like Google could treat you as half signed-out. Searches go through the
+browser's search API, which already sends them like a typed search.
+
 When you press `+` or Ctrl+T, the browser opens a new tab. The extension
 closes it right away and switches to the pinned New Tab. Closing it before it
 has finished loading keeps it out of *Recently closed*, so Ctrl+Shift+T still

@@ -64,6 +64,15 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // ---------------------------------------------------------------------------
 // Helpers
 
+// Open a URL from this page, in a new tab at the end of the strip (the
+// pinned tab stays as it is). A new tab reaches the site like a URL typed in
+// the browser's address bar ("Sec-Fetch-Site: none", SameSite=Strict cookies
+// included, so you stay signed in). Navigating this tab itself, by a link or
+// chrome.tabs.update, is sent as a cross-site request without those cookies.
+function openUrl(url, { background = false } = {}) {
+  return chrome.tabs.create({ url, active: !background });
+}
+
 function normalizeUrl(input) {
   const s = String(input || '').trim();
   if (!s) return '';
@@ -234,12 +243,23 @@ grid.addEventListener('click', (e) => {
     openDialog(-1);
     return;
   }
-  if (!editing) return; // normal click: follow the link
+  if (!editing) {
+    e.preventDefault();
+    openUrl(tile.href, { background: e.ctrlKey || e.metaKey });
+    return;
+  }
 
   e.preventDefault();
   const index = Number(tile.dataset.index);
   if (e.target.closest('.remove')) save(shortcuts.filter((_, i) => i !== index));
   else openDialog(index);
+});
+
+grid.addEventListener('auxclick', (e) => {
+  const tile = e.target.closest('.tile:not(.add)');
+  if (!tile || e.button !== 1 || editing) return;
+  e.preventDefault();
+  openUrl(tile.href, { background: true });
 });
 
 // Drag to reorder (edit mode only).

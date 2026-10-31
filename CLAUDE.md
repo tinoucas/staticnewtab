@@ -25,6 +25,10 @@
   git-ignored and the repo is public, so never commit it.
 - The pinned tab is `chrome-extension://<id>/newtab.html` (opened directly,
   not through `chrome://newtab`) so the page can take the keyboard focus.
+- Open pages from the page with `openUrl()` (newtab.js, chrome.tabs.create),
+  never by navigating the pinned tab (links, chrome.tabs.update,
+  location.href): those are sent as cross-site requests without SameSite=Strict
+  cookies. Searches use chrome.search.query, which is sent like a typed search.
 - Test with the pre-installed Playwright Chromium by loading the extension with
   `--disable-extensions-except` / `--load-extension` in a persistent context,
   and drive tabs through the service worker (`chrome.tabs.*`).

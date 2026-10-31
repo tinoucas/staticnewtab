@@ -26,7 +26,6 @@
   // -------------------------------------------------------------------------
   // Helpers
 
-  const isWeb = (url) => /^https?:/i.test(url);
   const isBookmarklet = (url) => /^javascript:/i.test(url);
   const visible = (nodes) => (nodes || []).filter((n) => !n.url || !isBookmarklet(n.url));
   // Menus can also hold non-bookmark entries (see history.js):
@@ -315,14 +314,10 @@
       openWindow([a.href], { incognito: true }).catch((err) => alert(err.message));
       return;
     }
-    if (isWeb(a.href)) {
-      if (background) closeMenus();
-      return;
-    }
+    // Always through a new tab: see openUrl() in newtab.js.
     e.preventDefault();
     closeMenus();
-    if (background) chrome.tabs.create({ url: a.href, active: e.shiftKey });
-    else chrome.tabs.update((await chrome.tabs.getCurrent()).id, { url: a.href });
+    openUrl(a.href, { background: background && !e.shiftKey });
   }
   document.addEventListener('click', openLink);
   document.addEventListener('auxclick', (e) => e.button === 1 && openLink(e));
