@@ -10,8 +10,8 @@ Chromium-based browser) that keeps a **New Tab page pinned** in every window.
   New Tab.
 - **Close the pinned tab** → it comes back.
 - **New windows** get their own pinned New Tab.
-- **A plain shortcut page** instead of the browser's New Tab page, with your
-  **bookmarks** below the shortcuts.
+- **A plain shortcut page** instead of the browser's New Tab page, with a
+  **bookmarks bar** at the top.
 
 ## Your shortcuts
 
@@ -44,15 +44,22 @@ leaving the pinned one.
 
 ## Bookmarks
 
-Below the shortcuts, each folder on your bookmarks bar gets its own card, and
-loose bookmarks go in a *Bookmarks bar* card. *Other bookmarks* and *Mobile
-bookmarks* follow, laid out the same way. Subfolders open and close inside
-their card, and the page remembers which ones you left open. The section updates
-as soon as you add, move or rename a bookmark.
+The top of the page has a bar that works like the browser's own bookmarks bar.
 
-To hide the section, click **Edit**, then **Hide bookmarks**.
-Bookmarklets (`javascript:` bookmarks) are left out because they can't run
-from this page.
+- Bookmarks-bar items appear in a row. A bookmark with no title shows only its
+  icon.
+- Clicking a **folder** opens a dropdown menu, and **subfolders** open
+  cascading submenus on hover. While a menu is open, hovering another folder
+  switches to it.
+- Bookmarks that don't fit go behind a **»** button.
+- **Other bookmarks** (and Mobile bookmarks, if you have any) sit at the right
+  end.
+- **Keyboard:** ↓ / Enter opens a folder, ↑ ↓ move through a menu, → opens a
+  submenu, ← goes back, and Esc closes.
+- The bar updates as soon as you add, move or rename a bookmark.
+
+To hide the bar, click **Edit**, then **Hide bookmarks**. Bookmarklets
+(`javascript:` bookmarks) are left out because they can't run from this page.
 
 ## Install (unpacked)
 
