@@ -38,6 +38,18 @@ else on the page goes into it too.
 
 ## Your shortcuts
 
+**Adding the page you're on:**
+
+- Right-click the page → **Add this page to Static New Tab**, or right-click
+  a link → **Add link to Static New Tab**.
+- Or click the extension's **toolbar button**. Pin it via the puzzle-piece
+  menu to keep it visible.
+- Or press **Alt+Shift+S**. Change it at `chrome://extensions/shortcuts`.
+
+The button shows ✓ when the page is added, or = when it's already a
+shortcut. The tab's own right-click menu (on the tab strip) can't have this
+entry: Chromium browsers don't let extensions add items there.
+
 Click **Edit** (bottom right) to:
 
 - **Add** a shortcut with the *Add shortcut* tile (name, URL, optional icon URL),
@@ -162,6 +174,7 @@ Permissions:
 - `history`: for address bar suggestions. The extension only deletes a page
   when you click × on it.
 - `search`: to search with your default search engine from the address bar.
+- `contextMenus`: for *Add this page / link to Static New Tab*.
 - `storage`, `unlimitedStorage`: for your shortcuts, settings and wallpaper.
   The browser won't clear them to free up space.
 

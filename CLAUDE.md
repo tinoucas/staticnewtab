@@ -14,7 +14,10 @@
   - `history.js`: History button (recently closed) next to the address bar (reuses the
     bookmarks bar's menu system)
   - `wallpaper.js`: background image, stored in IndexedDB
-  - `icon.svg`: favicon of the pinned tab
+  - `icon.svg`: favicon of the pinned tab; `icons/*.png` (rendered from it):
+    extension and toolbar icons
+  - `add-page.js`: "Add this page / link to Static New Tab" (right-click
+    menus, toolbar button, Alt+Shift+S); loaded by background.js
   - `settings.js`: export/import of all settings, and defaults from
     `defaults/settings.json` on a fresh install (also loaded by background.js
     via importScripts)

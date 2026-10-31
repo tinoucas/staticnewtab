@@ -1,14 +1,33 @@
 {
   "manifest_version": 3,
   "name": "Static New Tab",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "A pinned New Tab page with your own shortcuts. Navigating away from it turns it into a regular tab; new tabs reuse the pinned one.",
   "minimum_chrome_version": "116",
-  "permissions": ["tabs", "storage", "favicon", "bookmarks", "sessions", "history", "search", "unlimitedStorage"],
+  "permissions": ["tabs", "storage", "favicon", "bookmarks", "sessions", "history", "search", "unlimitedStorage", "contextMenus"],
   "background": {
     "service_worker": "background.js"
   },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "action": {
+    "default_title": "Add this page to Static New Tab",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "commands": {
+    "add-page": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Add this page to Static New Tab"
+    }
   }
 }

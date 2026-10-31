@@ -13,6 +13,7 @@
 //     (e.g. a new window), it is replaced by a pinned one.
 
 importScripts('settings.js'); // Settings: defaults on a fresh install
+importScripts('add-page.js'); // AddPage: right-click menus, toolbar button, Alt+Shift+S
 
 const STORAGE_KEY = 'managed';
 
