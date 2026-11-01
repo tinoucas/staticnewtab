@@ -76,6 +76,15 @@ to a third-party icon service, and carry no referrer. Sites with neither file
 show a letter (shortcuts) or a globe (bookmarks), and aren't asked again for a
 week. After you visit a site, the browser's own icon is used.
 
+**Missing icons…** (in Edit mode) finds the rest: some sites only list their
+icon inside their page. After you allow access to all websites (Helium asks
+when you click **Find icons**), the page of each bookmark or shortcut without
+an icon is read once, without your cookies, to find the icon it declares. The
+icon is then saved on this computer and shown without any further request.
+With the access on, icons for new bookmarks are found the same way when
+they're displayed. The same dialog can **Revoke access** (saved icons stay)
+or **Forget saved icons**.
+
 Ctrl/Cmd-click or middle-click a shortcut to open it in a new tab without
 leaving the pinned one.
 
@@ -186,6 +195,9 @@ Permissions:
   when you click × on it.
 - `search`: to search with your default search engine from the address bar.
 - `contextMenus`: for *Add this page / link to Static New Tab*.
+- Optional, only if you use **Missing icons…**: access to all websites, to
+  read sites' pages for their icon. It's never requested otherwise, and can be
+  revoked from the same dialog.
 - `storage`, `unlimitedStorage`: for your shortcuts, settings and wallpaper.
   The browser won't clear them to free up space.
 

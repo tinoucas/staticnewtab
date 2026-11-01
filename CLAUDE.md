@@ -15,7 +15,9 @@
     bookmarks bar's menu system)
   - `favicons.js`: icons for tiles, bookmarks and suggestions: the
     browser's favicon cache first, else the site's /favicon.ico or
-    /apple-touch-icon.png (use `Favicons.set(img, url)`)
+    /apple-touch-icon.png (use `Favicons.set(img, url)`); with the optional
+    all-sites permission (Edit → Missing icons…), the icon the site's page
+    declares, saved in chrome.storage.local "siteIcons"
   - `wallpaper.js`: background image, stored in IndexedDB
   - `icon.svg`: favicon of the pinned tab; `icons/*.png` (rendered from it):
     extension and toolbar icons

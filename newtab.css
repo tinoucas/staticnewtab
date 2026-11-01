@@ -527,3 +527,8 @@ body.drop-target #wallpaper { opacity: 1; outline: 4px dashed var(--accent); out
 }
 #se-dialog .hint { margin: -4px 0 12px; }
 #se-custom[hidden] { display: none; }
+
+/* Missing icons dialog */
+#fi-dialog p { margin: 0 0 12px; line-height: 1.5; }
+#fi-status { color: var(--muted); }
+#fi-dialog .actions { flex-wrap: wrap; }

@@ -43,6 +43,7 @@
       <button type="button" id="toggle-bookmarks">Hide bookmarks</button>
       <button type="button" id="open-wallpaper">Wallpaper…</button>
       <button type="button" id="open-search-engine">Search engine…</button>
+      <button type="button" id="open-icons">Missing icons…</button>
     </div>
     <button type="button" id="toggle-edit" title="Edit shortcuts" aria-pressed="false">Edit</button>
   </footer>
@@ -71,6 +72,21 @@
         <span class="spacer"></span>
         <button type="button" id="bm-cancel">Cancel</button>
         <button type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="fi-dialog">
+    <form method="dialog">
+      <h2>Missing icons</h2>
+      <p id="fi-text"></p>
+      <p id="fi-status" role="status" hidden></p>
+      <div class="actions">
+        <button type="button" id="fi-revoke" class="danger" hidden>Revoke access</button>
+        <button type="button" id="fi-forget" hidden>Forget saved icons</button>
+        <span class="spacer"></span>
+        <button type="submit" id="fi-close" autofocus>Close</button>
+        <button type="button" id="fi-find" class="primary">Find icons</button>
       </div>
     </form>
   </dialog>

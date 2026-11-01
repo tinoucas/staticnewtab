@@ -123,7 +123,13 @@ function tileFor(s, index) {
     img.src = s.icon;
     img.addEventListener('error', () => img.replaceWith(letter), { once: true });
   } else {
-    Favicons.set(img, s.url, { onMissing: () => img.replaceWith(letter) });
+    Favicons.set(img, s.url, {
+      onMissing: () => {
+        const text = document.createTextNode(letter);
+        img.replaceWith(text);
+        return text; // swapped back if an icon turns up later
+      },
+    });
   }
   icon.append(img);
 
@@ -322,6 +328,83 @@ importFile.addEventListener('change', async () => {
   } catch (err) {
     alert(`Couldn't import: ${err.message}`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Missing icons (opt-in): find the icons sites declare in their page.
+
+const fiDialog = document.getElementById('fi-dialog');
+const fiText = document.getElementById('fi-text');
+const fiStatus = document.getElementById('fi-status');
+const fiFind = document.getElementById('fi-find');
+const fiRevoke = document.getElementById('fi-revoke');
+const fiForget = document.getElementById('fi-forget');
+
+async function fiRefresh() {
+  const access = await Favicons.hasAccess();
+  fiText.textContent = access
+    ? 'Access to websites is on: icons missing from new bookmarks are found automatically. ' +
+      'Find icons checks all your bookmarks and shortcuts again.'
+    : 'Some sites only list their icon inside their page. To find those, each site without an ' +
+      'icon has its page read once, without your cookies, and the icon is saved on this ' +
+      'computer. Helium will ask to allow access to all websites. Nothing is sent anywhere else.';
+  fiRevoke.hidden = !access;
+  fiForget.hidden = Favicons.savedCount() === 0;
+  fiForget.textContent = `Forget saved icons (${Favicons.savedCount()})`;
+}
+
+function fiSay(text) {
+  fiStatus.hidden = !text;
+  fiStatus.textContent = text;
+}
+
+async function allPageUrls() {
+  const urls = shortcuts.map((s) => s.url);
+  const walk = (n) => (n.url ? urls.push(n.url) : (n.children || []).forEach(walk));
+  (await chrome.bookmarks.getTree()).forEach(walk);
+  return urls;
+}
+
+document.getElementById('open-icons').addEventListener('click', async () => {
+  fiSay('');
+  await fiRefresh();
+  fiDialog.showModal();
+});
+
+fiFind.addEventListener('click', async () => {
+  // Asked straight from the click: browsers only show the prompt then.
+  const granted = await chrome.permissions.request({ origins: Favicons.ALL_SITES }).catch(() => false);
+  if (!granted) {
+    fiSay('Access not granted: nothing was fetched.');
+    return;
+  }
+  fiFind.disabled = true;
+  try {
+    const result = await Favicons.scan(await allPageUrls(), (done, total) =>
+      fiSay(total ? `Checking sites without an icon… ${done} of ${total}` : 'Checking…')
+    );
+    if (!result.checked) fiSay('Every site already has an icon.');
+    else {
+      const none = result.checked - result.found;
+      fiSay(`Found ${result.found} of ${result.checked} missing icon${result.checked === 1 ? '' : 's'}.` +
+        (none ? ` ${none} site${none === 1 ? ' has' : 's have'} no icon, or couldn't be reached.` : ''));
+    }
+  } finally {
+    fiFind.disabled = false;
+    fiRefresh();
+  }
+});
+
+fiRevoke.addEventListener('click', async () => {
+  await chrome.permissions.remove({ origins: Favicons.ALL_SITES });
+  fiSay('Access removed. Icons already saved are kept.');
+  fiRefresh();
+});
+
+fiForget.addEventListener('click', async () => {
+  await Favicons.forget();
+  fiSay('Saved icons removed.');
+  fiRefresh();
 });
 
 render();
