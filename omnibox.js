@@ -205,7 +205,7 @@
     }
     const img = document.createElement('img');
     img.alt = '';
-    img.src = faviconUrl(row.url);
+    Favicons.set(img, row.url);
     return img;
   }
 

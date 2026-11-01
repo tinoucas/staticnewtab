@@ -51,7 +51,7 @@
       const img = document.createElement('img');
       img.className = 'bm-icon';
       img.alt = '';
-      img.src = faviconUrl(node.url);
+      Favicons.set(img, node.url);
       return img;
     }
     const span = document.createElement('span');

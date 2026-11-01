@@ -67,9 +67,14 @@ Click **Edit** (bottom right) to:
 Click **Done** or press Esc to finish. Changes show up at once in every open
 New Tab, including the pinned tab in each window.
 
-Icons are the site favicons the browser has already cached (the extension makes
-no network request for them). A site you haven't visited yet shows its first
-letter until you've been there once.
+Icons are the site favicons the browser has already cached. When it has none
+(a site you haven't visited in this browser yet, e.g. bookmarks imported on a
+new computer), the icon is loaded from the site itself: `/favicon.ico`, then
+`/apple-touch-icon.png`. This happens when the bookmark or shortcut is shown,
+and the browser's cache keeps the result. Requests go to that site only, never
+to a third-party icon service, and carry no referrer. Sites with neither file
+show a letter (shortcuts) or a globe (bookmarks), and aren't asked again for a
+week. After you visit a site, the browser's own icon is used.
 
 Ctrl/Cmd-click or middle-click a shortcut to open it in a new tab without
 leaving the pinned one.

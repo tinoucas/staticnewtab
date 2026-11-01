@@ -99,33 +99,7 @@ function sanitize(list) {
     }));
 }
 
-function faviconUrl(pageUrl) {
-  const u = new URL(chrome.runtime.getURL('/_favicon/'));
-  u.searchParams.set('pageUrl', pageUrl);
-  u.searchParams.set('size', '64');
-  return u.toString();
-}
-
-function pixels(img) {
-  const c = document.createElement('canvas');
-  c.width = img.naturalWidth;
-  c.height = img.naturalHeight;
-  c.getContext('2d').drawImage(img, 0, 0);
-  return c.toDataURL();
-}
-
-// The browser answers with a generic globe for sites it has no favicon for
-// (never visited yet). Fetch that globe once so tiles can show a letter instead.
-let genericIcon = null;
-function genericIconPixels() {
-  genericIcon ??= new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(pixels(img));
-    img.onerror = () => resolve(null);
-    img.src = faviconUrl('https://static-new-tab.invalid/');
-  });
-  return genericIcon;
-}
+// faviconUrl(), pixels() and Favicons live in favicons.js.
 
 // ---------------------------------------------------------------------------
 // Rendering
@@ -145,12 +119,11 @@ function tileFor(s, index) {
   const letter = (name.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase();
   const img = document.createElement('img');
   img.alt = '';
-  img.src = s.icon || faviconUrl(s.url);
-  img.addEventListener('error', () => img.replaceWith(letter), { once: true });
-  if (!s.icon) {
-    img.addEventListener('load', async () => {
-      if (pixels(img) === (await genericIconPixels())) img.replaceWith(letter);
-    }, { once: true });
+  if (s.icon) {
+    img.src = s.icon;
+    img.addEventListener('error', () => img.replaceWith(letter), { once: true });
+  } else {
+    Favicons.set(img, s.url, { onMissing: () => img.replaceWith(letter) });
   }
   icon.append(img);
 
