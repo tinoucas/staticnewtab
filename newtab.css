@@ -536,3 +536,33 @@ body.drop-target #wallpaper { opacity: 1; outline: 4px dashed var(--accent); out
 #fi-dialog p { margin: 0 0 12px; line-height: 1.5; }
 #fi-status { color: var(--muted); }
 #fi-dialog .actions { flex-wrap: wrap; }
+
+/* Site search chip ("Tab to search") */
+.ob-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 45%;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--tile));
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ob-chip[hidden] { display: none; }
+.ob-chip img { width: 16px; height: 16px; flex: none; }
+.ob-chip-text { overflow: hidden; text-overflow: ellipsis; }
+.ob-field:has(.ob-chip:not([hidden])) .ob-search-icon { display: none; }
+.ob-tab-hint kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+}

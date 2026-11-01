@@ -23,7 +23,7 @@ else on the page goes into it too.
 
 - **Domains complete first.** Typing `gma` suggests `gmail.com` right in the
   field, with the completed part selected. Keep typing to ignore it, or press
-  → / End / Tab to accept it. Domains are ranked by how often you visit them
+  → / End to accept it (Tab searches that site, see below). Domains are ranked by how often you visit them
   (sites you typed count most), plus your bookmarks and shortcuts.
 - **Suggestions below:** what Enter will do, a web search, matching bookmarks and pages from your history. Pick one
   with ↑ / ↓ or the mouse.
@@ -41,6 +41,22 @@ else on the page goes into it too.
 - Alt+Enter, Ctrl/Cmd-click or middle-click opens in a new tab.
 - Esc steps back: to what you typed, then closes the list, then clears the
   field.
+- **Tab to search a site:** type a domain (`amazon.fr`, `x.com`,
+  `aliexpress.com`…), or let it autocomplete, then press **Tab**. The domain
+  becomes a chip and what you type next is searched on that site. The first
+  suggestion shows **Tab · Search Amazon.fr** when the site's search is known.
+  **Backspace** at the start of the field (or Esc on an empty field) removes the
+  chip. Enter with nothing typed opens the site's home page.
+
+  How each site is searched:
+  1. A built-in list of about 9,000 sites (`data/site-search.json`), made from
+     [Kagi's open-source bangs list](https://github.com/kagisearch/bangs) (MIT,
+     see `data/LICENSE-bangs`). Rebuild it with `python3
+     tools/build-site-search.py`.
+  2. If the access to all websites is on (see *Missing icons…*), the site's own
+     [OpenSearch](https://github.com/dewitt/opensearch) description: the
+     standard browsers use to learn site searches. Found ones are remembered.
+  3. Otherwise your search engine, limited to the site (`site:example.com …`).
 
 ## Your shortcuts
 

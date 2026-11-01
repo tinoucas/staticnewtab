@@ -11,6 +11,10 @@
   - `bookmarks-edit.js`: right-click menu for bookmarks
   - `omnibox.js`: the in-page address bar (inline domain completion,
     suggestions)
+  - `site-search.js`: how to search a site for "Tab to search" in the
+    address bar: `data/site-search.json` (built from Kagi's MIT bangs list by
+    `tools/build-site-search.py`), else the site's OpenSearch description
+    (needs the optional all-sites access), else `site:` with the chosen engine
   - `history.js`: History button (recently closed) next to the address bar (reuses the
     bookmarks bar's menu system)
   - `favicons.js`: icons for tiles, bookmarks and suggestions: the

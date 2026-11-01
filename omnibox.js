@@ -8,6 +8,9 @@
 // - × on a history suggestion deletes that page from the browser history;
 //   × on a domain suggestion just stops suggesting that domain here.
 // - The field takes the keyboard focus whenever this tab gets focus.
+// - Tab after a domain ("amazon.fr", typed or completed) searches that site:
+//   the domain becomes a chip, what follows is searched there, Backspace at
+//   the start removes the chip. How each site is searched: site-search.js.
 
 (() => {
   const input = document.getElementById('ob-input');
@@ -40,6 +43,9 @@
   const MAX_HISTORY = 6;
   const MAX_BOOKMARKS = 3;
   const DAY = 24 * 3600 * 1000;
+
+  const chip = document.getElementById('ob-chip');
+  let site = null;        // search mode: { host, info: { name, template } | null, pending }
 
   let typed = '';         // what the user typed (without the inline completion)
   let inlineHost = null;  // { host, entry } completing the typed text
@@ -131,6 +137,88 @@
   }
 
   // -------------------------------------------------------------------------
+  // Site search mode ("Tab to search")
+
+  // The bare domain the field holds, if any (completed or typed in full).
+  function hostOfText() {
+    if (inlineHost) return inlineHost.host;
+    const t = stripScheme(input.value.trim()).replace(/\/$/, '');
+    return /^([a-z0-9-]+\.)+([a-z]{2,}|xn--[a-z0-9-]+)\.?$/i.test(t) ? t.toLowerCase() : null;
+  }
+
+  const siteLabel = () => site.info?.name || site.host;
+
+  function enterSite(host) {
+    const h = SiteSearch.norm(host);
+    site = { host: h, info: SiteSearch.known(h), pending: null };
+    site.pending = SiteSearch.find(h).then((info) => {
+      if (site?.host === h) {
+        site.info = info;
+        showChip();
+        render();
+      }
+      return info;
+    });
+    inlineHost = null;
+    input.value = typed = '';
+    showChip();
+    close();
+  }
+
+  function exitSite() {
+    site = null;
+    chip.hidden = true;
+    setPlaceholder();
+  }
+
+  function showChip() {
+    if (!site) return;
+    chip.hidden = false;
+    chip.querySelector('.ob-chip-text').textContent = site.host;
+    chip.title = site.info ? `Searching ${siteLabel()}` : `Searching ${site.host} with ${engine.url ? engine.name : 'your search engine'}`;
+    const img = chip.querySelector('img');
+    if (img.dataset.host !== site.host) {
+      img.dataset.host = site.host;
+      Favicons.set(img, `https://${site.host}/`);
+    }
+    input.placeholder = site.info ? `Search ${siteLabel()}` : `Search ${site.host}`;
+  }
+
+  // The URL for a search on the site (or its home page for an empty query).
+  async function siteSearchUrl(text) {
+    if (!text) return { url: `https://${site.host}/` };
+    const info = site.info || (await Promise.race([site.pending, new Promise((r) => setTimeout(() => r(null), 2500))]));
+    if (info) return { url: SiteSearch.urlFor(info.template, text) };
+    // No known search for this site: the chosen engine, limited to the site.
+    const q = `site:${site.host} ${text}`;
+    return engine.url ? { url: searchUrl(q) } : { query: q };
+  }
+
+  async function suggestSite() {
+    const my = ++seq;
+    const text = typed.trim();
+    if (!text) return;
+    const history = await chrome.history.search({ text, startTime: 0, maxResults: 100 }).catch(() => []);
+    if (my !== seq || !site) return;
+    const onSite = (url) => {
+      try {
+        const h = new URL(url).hostname.replace(/^www\./, '');
+        return h === site.host || h.endsWith(`.${site.host}`);
+      } catch {
+        return false;
+      }
+    };
+    const q = text.toLowerCase();
+    rows = [{ type: 'site', text }, ...history
+      .filter((h) => onSite(h.url))
+      .sort((a, b) => score(b, q) - score(a, q))
+      .slice(0, MAX_HISTORY)
+      .map((h) => ({ type: 'history', url: h.url, main: h.title || display(h.url), sub: h.title ? display(h.url) : '' }))];
+    selected = Math.min(selected, rows.length - 1);
+    render();
+  }
+
+  // -------------------------------------------------------------------------
   // Suggestions
 
   function defaultRow() {
@@ -198,6 +286,12 @@
   // Rendering
 
   function iconFor(row) {
+    if (row.type === 'site') {
+      const img = document.createElement('img');
+      img.alt = '';
+      Favicons.set(img, `https://${site.host}/`);
+      return img;
+    }
     if (row.type === 'search') {
       const span = document.createElement('span');
       span.className = 'ob-icon-search';
@@ -222,12 +316,14 @@
       const text = document.createElement('span');
       text.className = 'ob-text';
       const main = document.createElement('span');
-      main.textContent = row.type === 'search' ? row.text : row.main;
+      main.textContent = row.type === 'search' || row.type === 'site' ? row.text : row.main;
       if (row.type === 'nav') main.className = 'ob-url';
       text.append(main);
-      const subText = row.type === 'search'
-        ? (engine.url ? `Search ${engine.name}` : 'Search the web')
-        : row.sub;
+      const subText = row.type === 'site'
+        ? (site.info ? `Search ${siteLabel()}` : `Search ${site.host} with ${engine.url ? engine.name : 'your search engine'}`)
+        : row.type === 'search'
+          ? (engine.url ? `Search ${engine.name}` : 'Search the web')
+          : row.sub;
       if (subText) {
         const sub = document.createElement('span');
         sub.className = 'ob-sub';
@@ -236,6 +332,18 @@
       }
       li.append(iconFor(row), text);
 
+      if (i === 0 && row.type === 'nav' && !site) {
+        // "Tab to search" hint when we know how to search this site.
+        const h = hostOfText();
+        const info = h && SiteSearch.known(h);
+        if (info) {
+          const tag = document.createElement('span');
+          tag.className = 'ob-tag ob-tab-hint';
+          tag.innerHTML = '<kbd>Tab</kbd> ';
+          tag.append(`Search ${info.name}`);
+          li.append(tag);
+        }
+      }
       if (row.type === 'bookmark') {
         const tag = document.createElement('span');
         tag.className = 'ob-tag';
@@ -273,6 +381,13 @@
   // Typing
 
   function update({ allowInline }) {
+    if (site) {
+      selected = 0;
+      rows = typed.trim() ? [{ type: 'site', text: typed.trim() }] : [];
+      render();
+      suggestSite().catch(console.error);
+      return;
+    }
     inlineHost = null;
     const m = typed && matchHost(typed);
     if (m) {
@@ -329,6 +444,20 @@
   async function go(row, { newTab = false, background = false } = {}) {
     if (!row) return;
     if (!tabId) tabId = (await chrome.tabs.getCurrent())?.id;
+    if (row.type === 'site') {
+      const target = await siteSearchUrl(row.text);
+      if (target.url) await openUrl(target.url, { background: newTab && background });
+      else await chrome.search.query(newTab ? { text: target.query, disposition: 'NEW_TAB' } : { text: target.query, tabId });
+      if (newTab) {
+        input.select();
+        close();
+      } else {
+        exitSite();
+        input.value = typed = '';
+        close();
+      }
+      return;
+    }
     if (row.incognito) {
       await window.bookmarksBar.openWindow([row.url], { incognito: true });
       return;
@@ -390,7 +519,8 @@
       case 'Enter':
         e.preventDefault();
         if (e.isComposing) return;
-        go(rows[selected] || (typed.trim() && defaultRow()), { newTab: e.altKey || e.metaKey || e.ctrlKey });
+        go(rows[selected] || (site ? { type: 'site', text: typed.trim() } : typed.trim() && defaultRow()),
+          { newTab: e.altKey || e.metaKey || e.ctrlKey });
         break;
       case 'Escape':
         e.stopPropagation();
@@ -403,14 +533,20 @@
         else if (input.value) {
           input.value = typed = '';
           close();
-        }
+        } else if (site) exitSite();
         break;
-      case 'Tab':
-        if (hasInline()) {
+      case 'Tab': {
+        // Tab after a domain: search that site.
+        const host = !site && !e.shiftKey && hostOfText();
+        if (host) {
+          e.preventDefault();
+          enterSite(host);
+        } else if (hasInline()) {
           e.preventDefault();
           acceptInline();
         }
         break;
+      }
       case 'ArrowRight':
       case 'End':
         if (hasInline() && !e.shiftKey) {
@@ -420,6 +556,13 @@
         break;
       case 'Delete':
       case 'Backspace':
+        // Backspace at the start of the field removes the site chip.
+        if (e.key === 'Backspace' && site && !e.shiftKey && input.selectionStart === 0 && input.selectionEnd === 0) {
+          e.preventDefault();
+          exitSite();
+          update({ allowInline: false });
+          break;
+        }
         if (e.shiftKey && open && (rows[selected]?.type === 'history' || rows[selected]?.host)) {
           e.preventDefault();
           removeRow(selected);
@@ -444,6 +587,7 @@
 
   input.addEventListener('blur', () => setTimeout(() => document.activeElement !== input && close(), 0));
   input.addEventListener('focus', () => {
+    SiteSearch.preload();
     refreshIndexIfStale();
     if (typed.trim()) update({ allowInline: false });
   });
@@ -487,9 +631,14 @@
   const seUrl = document.getElementById('se-url');
   const seName = document.getElementById('se-name');
 
+  function setPlaceholder() {
+    if (site) return showChip();
+    input.placeholder = engine.url ? `Search ${engine.name} or type a URL` : 'Search or type a URL';
+  }
+
   function setEngine(value) {
     engine = value && typeof value.url === 'string' ? value : ENGINES[0];
-    input.placeholder = engine.url ? `Search ${engine.name} or type a URL` : 'Search or type a URL';
+    setPlaceholder();
   }
 
   seSelect.replaceChildren(
