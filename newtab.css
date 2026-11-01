@@ -145,7 +145,8 @@ button {
   cursor: pointer;
 }
 button:hover { background: var(--tile-hover); }
-footer button { opacity: 0.55; }
+/* The Edit button stays faint until you point at it. */
+footer button { opacity: 0.18; transition: opacity 0.15s; }
 footer button:hover, footer button:focus-visible, .editing footer button { opacity: 1; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.danger { color: var(--danger); }
@@ -353,7 +354,10 @@ body.has-wallpaper .bm-item:hover,
 body.has-wallpaper .bm-item:focus-visible,
 body.has-wallpaper .bm-item[aria-expanded="true"] { background: rgb(255 255 255 / 0.18); }
 body.has-wallpaper .bm-right:not(:empty) { border-left-color: rgb(255 255 255 / 0.25); }
-body.has-wallpaper footer button { opacity: 0.85; }
+body.has-wallpaper footer button { opacity: 0.3; }
+body.has-wallpaper footer button:hover,
+body.has-wallpaper footer button:focus-visible,
+body.has-wallpaper.editing footer button { opacity: 1; }
 
 #wp-preview {
   display: grid;
