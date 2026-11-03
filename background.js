@@ -182,7 +182,17 @@ chrome.runtime.onStartup.addListener(() => {
   run('startup', reconcile);
 });
 
-chrome.tabs.onCreated.addListener((tab) => run('tab created', () => onNewTab(tab)));
+chrome.tabs.onCreated.addListener((tab) => {
+  // A tab the pinned page opened itself (e.g. search by image, a form posted
+  // to a new tab): the browser puts it next to its opener; move it to the
+  // end, where everything opened from the pinned tab goes.
+  if (tab.openerTabId != null && !tab.pinned) {
+    run('opened by pinned tab', async () => {
+      if (isManagedTabId(tab.openerTabId)) await chrome.tabs.move(tab.id, { index: -1 }).catch(() => {});
+    });
+  }
+  run('tab created', () => onNewTab(tab));
+});
 
 chrome.tabs.onUpdated.addListener((tabId, change, tab) =>
   run('tab updated', async () => {

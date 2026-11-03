@@ -24,10 +24,10 @@
     declares, saved in chrome.storage.local "siteIcons"
   - `wallpaper.js`: background image, stored in IndexedDB (drop an image on the
     wallpaper dialog; dropped on the page, an image starts a search by image)
-  - `image-drop.js` / `image-search.js` / `image-search.html` +
-    `image-search-page.js`: search by image. Google Lens, or Bing visual
-    search when Bing is the chosen engine; a file is handed to the upload
-    page through chrome.storage.session and posted from that new tab
+  - `image-drop.js` / `image-search.js`: search by image. Google Lens, or
+    Bing visual search when Bing is the chosen engine; the page posts the
+    image in a form with target _blank (allowed without a click on extension
+    pages), and background.js moves tabs opened by the pinned tab to the end
   - `icon.svg`: favicon of the pinned tab; `icons/*.png` (rendered from it):
     extension and toolbar icons
   - `add-page.js`: "Add this page / link to Static New Tab" (right-click

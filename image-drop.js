@@ -1,6 +1,6 @@
 // Static New Tab — drop an image on the page to search by image
-// (image-search.js). A file is sent through image-search.html in a new tab;
-// an image dragged from another page is searched by its address.
+// (image-search.js). A file is posted to the service, which opens its results
+// in a new tab; an image dragged from another page is searched by its address.
 
 (() => {
   const hint = document.getElementById('drop-hint');
@@ -63,10 +63,8 @@
     const file = [...dt.files].find((f) => f.type.startsWith('image/'));
     try {
       if (file) {
-        const image = await ImageSearch.prepare(file);
-        const key = `image-search-${Date.now()}`;
-        await chrome.storage.session.set({ [key]: image });
-        await openUrl(chrome.runtime.getURL(`image-search.html#${key}`));
+        const [svc, image] = await Promise.all([ImageSearch.service(), ImageSearch.prepare(file)]);
+        ImageSearch.submit(svc, image);
         return;
       }
       const url = imageUrl(dt);

@@ -1,4 +1,6 @@
 // Static New Tab — search by image (drop an image on the New Tab page).
+// The page posts the image itself, to a new tab (form target _blank); the
+// background moves that tab to the end of the strip.
 //
 // Google → Google Lens, Bing → Bing visual search. The other engines in the
 // list have no public way to search by an uploaded image, so they use Google
@@ -70,8 +72,38 @@ const ImageSearch = (() => {
     } catch {
       // Not decodable here (e.g. some formats): send it as it is.
     }
-    return { name, type: blob.type || 'image/jpeg', dataUrl: await toDataUrl(blob) };
+    const type = blob.type || 'image/jpeg';
+    return { name, type, file: new File([blob], name, { type }), dataUrl: await toDataUrl(blob) };
   }
 
-  return { service, prepare, SERVICES };
+  // Post the image to the service; the browser opens the results in a new
+  // tab straight away (no page of ours in between).
+  function submit(svc, image) {
+    const { action, fields } = svc.form(image);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.enctype = 'multipart/form-data';
+    form.target = '_blank';
+    form.action = action;
+    form.hidden = true;
+    for (const f of fields) {
+      const input = document.createElement('input');
+      input.name = f.name;
+      if (f.file) {
+        input.type = 'file';
+        const dt = new DataTransfer();
+        dt.items.add(image.file);
+        input.files = dt.files;
+      } else {
+        input.type = 'hidden';
+        input.value = f.value;
+      }
+      form.append(input);
+    }
+    document.body.append(form);
+    form.submit();
+    form.remove();
+  }
+
+  return { service, prepare, submit, SERVICES };
 })();

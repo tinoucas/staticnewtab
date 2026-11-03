@@ -159,8 +159,8 @@ page, to search for it:
 - With any other: **Google Lens**. DuckDuckGo, Brave Search, Startpage, Kagi,
   Ecosia and Qwant have no public way to search by an uploaded image.
 
-A dropped file opens a new tab that sends it to the engine (big photos are
-scaled down to 2000 px first), and that tab becomes the results page. An image
+A dropped file is sent straight to the engine (big photos are scaled down to
+2000 px first), and the results open in a new tab at the end of the strip. An image
 from a web page is searched by its address. Neither upload is an official API:
 they send the image the way the engines' own "search by image" buttons do, so
 they could break if an engine changes them.
