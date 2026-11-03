@@ -136,21 +136,22 @@
     if (file) setImage(file).catch((e) => alert(`Couldn't use that image: ${e.message}`));
   });
 
-  // Drop an image file anywhere on the page.
+  // Drop an image file on the wallpaper dialog. (Dropped on the page, an
+  // image starts a search by image instead: image-drop.js.)
   const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
-  document.addEventListener('dragover', (e) => {
+  dialog.addEventListener('dragover', (e) => {
     if (!hasFiles(e)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
-    document.body.classList.add('drop-target');
+    preview.classList.add('drop-target');
   });
-  document.addEventListener('dragleave', (e) => {
-    if (!e.relatedTarget) document.body.classList.remove('drop-target');
+  dialog.addEventListener('dragleave', (e) => {
+    if (!dialog.contains(e.relatedTarget)) preview.classList.remove('drop-target');
   });
-  document.addEventListener('drop', (e) => {
+  dialog.addEventListener('drop', (e) => {
     if (!hasFiles(e)) return;
     e.preventDefault();
-    document.body.classList.remove('drop-target');
+    preview.classList.remove('drop-target');
     const file = [...e.dataTransfer.files].find((f) => f.type.startsWith('image/'));
     if (file) setImage(file).catch((err) => alert(`Couldn't use that image: ${err.message}`));
   });

@@ -22,7 +22,12 @@
     /apple-touch-icon.png (use `Favicons.set(img, url)`); with the optional
     all-sites permission (Edit → Missing icons…), the icon the site's page
     declares, saved in chrome.storage.local "siteIcons"
-  - `wallpaper.js`: background image, stored in IndexedDB
+  - `wallpaper.js`: background image, stored in IndexedDB (drop an image on the
+    wallpaper dialog; dropped on the page, an image starts a search by image)
+  - `image-drop.js` / `image-search.js` / `image-search.html` +
+    `image-search-page.js`: search by image. Google Lens, or Bing visual
+    search when Bing is the chosen engine; a file is handed to the upload
+    page through chrome.storage.session and posted from that new tab
   - `icon.svg`: favicon of the pinned tab; `icons/*.png` (rendered from it):
     extension and toolbar icons
   - `add-page.js`: "Add this page / link to Static New Tab" (right-click

@@ -150,10 +150,25 @@ The clock button right of the address bar opens a menu with:
   with its back/forward history, like Ctrl+Shift+T.
 - **Show full history**, which opens the browser's History page.
 
+## Search by image
+
+Drop an image on the pinned tab, either a file or an image dragged from a web
+page, to search for it:
+
+- With **Bing** as search engine: Bing visual search.
+- With any other: **Google Lens**. DuckDuckGo, Brave Search, Startpage, Kagi,
+  Ecosia and Qwant have no public way to search by an uploaded image.
+
+A dropped file opens a new tab that sends it to the engine (big photos are
+scaled down to 2000 px first), and that tab becomes the results page. An image
+from a web page is searched by its address. Neither upload is an official API:
+they send the image the way the engines' own "search by image" buttons do, so
+they could break if an engine changes them.
+
 ## Wallpaper
 
-Click **Edit**, then **Wallpaper…**, then **Choose image…**, or just drop an
-image file anywhere on the page.
+Click **Edit**, then **Wallpaper…**, then **Choose image…**, or drop an image
+file on that dialog.
 
 - **Fill the page** crops the image to cover the whole tab. **Fit inside the
   page** shows all of it.

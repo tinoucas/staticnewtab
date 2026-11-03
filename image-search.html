@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Searching by image…</title>
+  <link rel="icon" href="icon.svg">
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+           font: 15px/1.5 system-ui, sans-serif; color: #6e6e73; background: #f6f6f4; }
+    @media (prefers-color-scheme: dark) { body { background: #1b1b1d; color: #9a9aa0; } }
+    img { display: block; max-width: 240px; max-height: 240px; margin: 0 auto 16px; border-radius: 8px; }
+    form { display: none; }
+  </style>
+</head>
+<body>
+  <div>
+    <img id="preview" alt="" hidden>
+    <p id="status">Searching by image…</p>
+  </div>
+  <script src="image-search.js"></script>
+  <script src="image-search-page.js"></script>
+</body>
+</html>

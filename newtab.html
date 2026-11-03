@@ -9,6 +9,7 @@
 </head>
 <body>
   <div id="wallpaper" aria-hidden="true"></div>
+  <div id="drop-hint" hidden><div>Drop to search with <span class="drop-service">Google Lens</span></div></div>
   <nav id="bookmarks" class="bm-bar" aria-label="Bookmarks" hidden>
     <div class="bm-items" role="menubar"></div>
     <button type="button" class="bm-item bm-overflow" title="More bookmarks" aria-haspopup="menu" hidden>»</button>
@@ -104,6 +105,8 @@
                placeholder="https://example.com/search?q=%s"></label>
         <p class="hint">%s is replaced by what you type.</p>
       </div>
+      <p class="hint">An image dropped on the page is searched with Bing if Bing is
+        selected, otherwise with Google Lens.</p>
       <p class="hint">Searches open like a typed address, which is fast. "Browser
         default" uses Helium's own search engine, but can take several seconds.</p>
       <div class="actions">
@@ -131,7 +134,7 @@
       <label>Dim <output id="wp-dim-value"></output>
         <input type="range" id="wp-dim" min="0" max="70" step="5">
       </label>
-      <p class="hint">You can also drop an image file anywhere on the page.</p>
+      <p class="hint">You can also drop an image file here.</p>
       <div class="actions">
         <span class="spacer"></span>
         <button type="submit" class="primary">Done</button>
@@ -155,5 +158,7 @@
   <script src="site-search.js"></script>
   <script src="omnibox.js"></script>
   <script src="wallpaper.js"></script>
+  <script src="image-search.js"></script>
+  <script src="image-drop.js"></script>
 </body>
 </html>
