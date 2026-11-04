@@ -55,6 +55,10 @@
   let tabId = null;
 
   let hosts = new Map();  // "gmail.com" -> { score, https, http, real }
+  // Listed site searches on a subdomain of a site you visit but never typed
+  // as such (maps.google.com when you use google.com): offered only when
+  // nothing in `hosts` matches.
+  let weakHosts = new Map();
   let hostsAt = 0;
   let hiddenHosts = new Set();
 
@@ -86,6 +90,8 @@
 
   async function buildIndex() {
     const map = new Map();
+    // Visits by first path segment: "google.com|maps" for google.com/maps/…
+    const bySection = new Map();
     const add = (url, weight) => {
       let u;
       try {
@@ -96,6 +102,8 @@
       if (u.protocol !== 'https:' && u.protocol !== 'http:') return;
       const host = u.hostname.replace(/^www\./, '');
       if (!host) return;
+      const section = u.pathname.split('/')[1]?.toLowerCase();
+      if (section) bySection.set(`${host}|${section}`, (bySection.get(`${host}|${section}`) || 0) + weight);
       const e = map.get(host) || { score: 0, https: 0, http: 0, real: u.hostname };
       e.score += weight;
       e[u.protocol === 'https:' ? 'https' : 'http'] += 1;
@@ -107,13 +115,32 @@
       chrome.history.search({ text: '', startTime: Date.now() - 365 * DAY, maxResults: 10000 }),
       chrome.bookmarks.getTree().catch(() => []),
       chrome.storage.local.get(['shortcuts', HIDDEN_KEY]),
+      SiteSearch.preload(),
     ]);
     for (const h of history) add(h.url, (h.visitCount || 1) + 10 * (h.typedCount || 0));
     const walk = (n) => (n.url ? add(n.url, 20) : (n.children || []).forEach(walk));
     tree.forEach(walk);
     for (const s of stored.shortcuts || []) add(s.url, 50);
 
+    // Sites with a listed search on a subdomain (maps.google.com) are often
+    // visited as a path (google.com/maps): count those visits for the
+    // subdomain, so "maps" completes to maps.google.com and Tab searches it.
+    // Otherwise, a subdomain of a site you visit is a weak candidate.
+    const weak = new Map();
+    for (const domain of SiteSearch.domains()) {
+      if (map.has(domain)) continue;
+      const dot = domain.indexOf('.');
+      const label = domain.slice(0, dot);
+      const parent = domain.slice(dot + 1);
+      if (!parent.includes('.')) continue; // not a subdomain
+      const viaPath = bySection.get(`${parent}|${label}`);
+      const entry = { score: viaPath || map.get(parent)?.score || 0, https: 1, http: 0, real: domain };
+      if (viaPath) map.set(domain, entry);
+      else if (entry.score) weak.set(domain, entry);
+    }
+
     hosts = map;
+    weakHosts = weak;
     hiddenHosts = new Set(stored[HIDDEN_KEY] || []);
     hostsAt = Date.now();
   }
@@ -125,15 +152,19 @@
   function matchHost(text) {
     const t = stripScheme(text.toLowerCase());
     if (!t || /[\s/?#]/.test(t)) return null;
-    let best = null;
-    for (const [host, entry] of hosts) {
-      if (!host.startsWith(t) || hiddenHosts.has(host)) continue;
-      if (!best || entry.score > best.entry.score ||
-          (entry.score === best.entry.score && host.length < best.host.length)) {
-        best = { host, entry };
+    const best = (pool) => {
+      let found = null;
+      for (const [host, entry] of pool) {
+        if (!host.startsWith(t) || hiddenHosts.has(host)) continue;
+        if (!found || entry.score > found.entry.score ||
+            (entry.score === found.entry.score && host.length < found.host.length)) {
+          found = { host, entry };
+        }
       }
-    }
-    return best && { ...best, typedLen: t.length };
+      return found;
+    };
+    const found = best(hosts) || best(weakHosts);
+    return found && { ...found, typedLen: t.length };
   }
 
   // -------------------------------------------------------------------------

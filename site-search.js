@@ -127,5 +127,8 @@ const SiteSearch = (() => {
     return template.replace(/%s/g, inQuery ? value.replace(/%20/g, '+') : value);
   }
 
-  return { preload, known, find, urlFor, norm };
+  // The listed domains (after preload()).
+  const domains = () => Object.keys(table || {});
+
+  return { preload, known, find, urlFor, norm, domains };
 })();

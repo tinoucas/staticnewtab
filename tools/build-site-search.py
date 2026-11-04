@@ -21,6 +21,13 @@ from urllib.parse import urlsplit
 SOURCE = 'https://raw.githubusercontent.com/kagisearch/bangs/main/data/bangs.json'
 OUT = 'data/site-search.json'
 
+# Sites whose bangs are all variants (e.g. one per language pair), with a
+# general search added here.
+OVERRIDES = {
+    # Auto-detect the language, translate to your usual one.
+    'translate.google.com': ['Google Translate', 'https://translate.google.com/?sl=auto&text=%s&op=translate'],
+}
+
 
 def load():
     if len(sys.argv) > 1:
@@ -43,7 +50,8 @@ def penalty(entry, domain):
     extra_params = len([p for p in parts.query.split('&') if p and 'QUERY' not in p])
     # The query is the whole value of a parameter (q=%s, not
     # q=subreddit:%s or q=!safeoff+%s).
-    clean = any(p.split('=', 1)[-1] == 'QUERY' for p in parts.query.split('&'))
+    clean = any(p.split('=', 1)[-1] == 'QUERY' and p.split('=', 1)[0].lower() not in ('u', 'url')
+                for p in parts.query.split('&'))
     return (
         0 if named_after_site else 1,
         0 if clean else 1 if 'QUERY' in parts.query else 2,
@@ -68,7 +76,9 @@ def main():
         cand = (penalty(e, key), e)
         if key not in best or cand[0] < best[key][0]:
             best[key] = cand
-    out = {k: [e.get('s') or k, e['u'].replace('{{{s}}}', '%s')] for k, (_, e) in sorted(best.items())}
+    out = {k: [e.get('s') or k, e['u'].replace('{{{s}}}', '%s')] for k, (_, e) in best.items()}
+    out.update(OVERRIDES)
+    out = dict(sorted(out.items()))
     with open(OUT, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
     print(f'{len(out)} sites written to {OUT}')

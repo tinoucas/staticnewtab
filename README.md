@@ -43,7 +43,10 @@ else on the page goes into it too.
   field.
 - **Tab to search a site:** type a domain (`amazon.fr`, `x.com`,
   `aliexpress.com`…), or let it autocomplete, then press **Tab**. The domain
-  becomes a chip and what you type next is searched on that site. The first
+  becomes a chip and what you type next is searched on that site. Sub-sites
+  you use as a path also complete: if you visit `google.com/maps`, typing
+  `maps` completes to `maps.google.com`, so `maps` Tab searches Google Maps
+  (the same for Translate, News, Drive, Scholar…). The first
   suggestion shows **Tab · Search Amazon.fr** when the site's search is known.
   **Backspace** at the start of the field (or Esc on an empty field) removes the
   chip. Enter with nothing typed opens the site's home page.
