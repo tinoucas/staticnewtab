@@ -60,13 +60,38 @@ function run(label, fn) {
 
 const exists = (promise) => promise.then(() => true, () => false);
 
+// Windows that can't hold our pinned tab. Helium reports a
+// Picture-in-Picture window (Google Meet's mini player when you leave its
+// tab, video players…) as a "normal" window; asked to put a tab in it, the
+// browser puts the tab in another window instead, which used to pile up
+// extra pinned tabs there.
+const tabless = new Set();
+
+// A Picture-in-Picture window's only tab has no address at all, not even
+// the New Tab page a real new window starts with.
+const looksLikePictureInPicture = (win) =>
+  win.tabs?.length === 1 && !win.tabs[0].url && !win.tabs[0].pendingUrl && win.tabs[0].status === 'complete';
+
 async function isNormalWindow(windowId) {
+  if (tabless.has(windowId)) return false;
   try {
-    const win = await chrome.windows.get(windowId);
-    return win.type === 'normal';
+    const win = await chrome.windows.get(windowId, { populate: true });
+    if (win.type !== 'normal') return false;
+    if (looksLikePictureInPicture(win)) {
+      tabless.add(windowId);
+      return false;
+    }
+    return true;
   } catch {
     return false;
   }
+}
+
+// Close pinned New Tabs other than the managed one (duplicates).
+async function closeDuplicates(windowId, keepId) {
+  const pinned = await chrome.tabs.query({ windowId, pinned: true });
+  const extra = pinned.filter((t) => t.id !== keepId && isNtpUrl(tabUrl(t))).map((t) => t.id);
+  if (extra.length) await chrome.tabs.remove(extra).catch(() => {});
 }
 
 function entryFor(tab) {
@@ -100,7 +125,10 @@ function isHome(m, url) {
 // one is already there, otherwise create one in the background.
 async function ensure(windowId) {
   const m = managed[windowId];
-  if (m && (await exists(chrome.tabs.get(m.tabId)))) return;
+  if (m && (await exists(chrome.tabs.get(m.tabId)))) {
+    await closeDuplicates(windowId, m.tabId);
+    return;
+  }
   delete managed[windowId];
   if (!(await isNormalWindow(windowId))) {
     await save();
@@ -116,6 +144,13 @@ async function ensure(windowId) {
     if (extra.length) await chrome.tabs.remove(extra).catch(() => {});
   } else {
     const tab = await chrome.tabs.create({ windowId, url: OWN_URL, pinned: true, active: false });
+    if (tab.windowId !== windowId) {
+      // The browser put it elsewhere: this window can't hold tabs.
+      tabless.add(windowId);
+      await chrome.tabs.remove(tab.id).catch(() => {});
+      await save();
+      return;
+    }
     manage(tab);
   }
   await save();
@@ -251,6 +286,7 @@ chrome.windows.onCreated.addListener(
 
 chrome.windows.onRemoved.addListener((windowId) =>
   run('window removed', async () => {
+    tabless.delete(windowId);
     if (!managed[windowId]) return;
     delete managed[windowId];
     await save();

@@ -37,6 +37,10 @@
     via importScripts)
 - `defaults/settings.json` holds the user's personal settings: it is
   git-ignored and the repo is public, so never commit it.
+- Helium reports Picture-in-Picture windows (Google Meet's mini player…) as
+  type "normal": background.js recognises them (one tab with no URL at all)
+  and never gives them a pinned tab; a tab the browser puts in another window
+  than asked is removed, and duplicate pinned New Tabs are closed.
 - The pinned tab is `chrome-extension://<id>/newtab.html` (opened directly,
   not through `chrome://newtab`) so the page can take the keyboard focus.
 - Open pages from the page with `openUrl()` (newtab.js, chrome.tabs.create),
